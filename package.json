@@ -10,7 +10,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "NODE_ENV=development npm run prisma:migration:dev && nest start --watch",
+    "start:dev": "NODE_ENV=development npm run prisma:migration:apply && nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -27,7 +27,8 @@
     "docker:dev:exec": "docker-compose exec api sh",
     "docker:test": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml --env-file ./.env.test up -d",
     "docker:test:down": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml down",
-    "prisma:migration:dev": "npx prisma migrate dev && npm run prisma:generate",
+    "prisma:migration:draft": "npx prisma migrate dev --create-only",
+    "prisma:migration:apply": "npx prisma migrate dev && npm run prisma:generate",
     "prisma:migration:deploy": "npx prisma migrate deploy",
     "prisma:generate": "npx prisma generate"
   },

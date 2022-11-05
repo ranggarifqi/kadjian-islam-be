@@ -28,3 +28,18 @@ model User {
   credentialId String     @unique @db.Uuid
   credential   Credential @relation(fields: [credentialId], references: [id])
 }
+
+model District {
+  id         String   @id
+  provinceId String
+  name       String
+  Province   Province @relation(fields: [provinceId], references: [id])
+
+  @@index([provinceId])
+}
+
+model Province {
+  id        String     @id
+  name      String
+  districts District[]
+}
