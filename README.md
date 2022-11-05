@@ -67,6 +67,11 @@ Note here. The reason why we run the server first, is because if we don't, then 
 
 The moment you run the server, it will generate the migration files & APPLY it immediately.
 
+### Gotchas
+After you apply the migration, sometimes you can't import the new table's model. Or the model's definition is not updated.
+That's because prisma was only generated or applied to the `node_modules` inside the container. And not to the `real` node_modules folder.
+So, you need to get out from the container, and then run `npm run prisma:generate` manually.
+
 ## Tips
 
 ### Development Workflow
