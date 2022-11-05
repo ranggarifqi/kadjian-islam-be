@@ -44,23 +44,33 @@ $ npm run test:e2e
 
 ## Migration
 
+**Run the server first. Very important!**
+
 To do migration, edit `schema.prisma` first.
 And then do this
 
 ```bash
-# Go inside the container first
+# Go inside the container
 $ npm run docker:exec
 
-# Create New Migration (Dev Only)
-$ npm run prisma:migration:name {MIGRATION_NAME}
+# Generate the Draft Migration Script (Dev Only)
+$ npm run prisma:migration:draft -- --name {MIGRATION_NAME}
 
-# Migrate to latest schema (Dev only)
-$ npm run prisma:migration:dev
+# Review the generate sql
+
+# Ensure the sql is generated properly w/ the correct queries. Then Apply the migration (Dev only)
+$ npm run prisma:migration:apply
 
 ```
 
+Note here. The reason why we run the server first, is because if we don't, then we won't have the time to review the generated SQL.
+
+The moment you run the server, it will generate the migration files & APPLY it immediately.
+
 ## Tips
+
 ### Development Workflow
+
 Make your changes, and ensure that the changes are tested properly by Unit + Integration Test.
 
 You might not even need to start the server. Just utilize the test command.
@@ -68,6 +78,7 @@ You might not even need to start the server. Just utilize the test command.
 My preferred ratio of Unit : Integration is 80% : 20%
 
 ### Regarding Test Files
+
 Unit tests should always have a filename of `*.spec.ts`
 
 Integration tests should always have a filename of `*.test.ts`.
@@ -77,4 +88,3 @@ Don't mix them up !
 ## Stay in touch
 
 - Author - [Rangga Rifqi Pratama](https://ranggarifqi.com)
-
