@@ -25,8 +25,8 @@
     "docker:dev": "NODE_ENV=development docker-compose --env-file ./.env up",
     "docker:dev:build": "docker-compose --env-file ./.env build",
     "docker:dev:exec": "docker-compose exec api sh",
-    "docker:test": "NODE_ENV=test docker-compose --project-name money-manager-test --file ./docker-compose.test.yml --env-file ./.env.test up -d",
-    "docker:test:down": "NODE_ENV=test docker-compose --project-name money-manager-test --file ./docker-compose.test.yml down",
+    "docker:test": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml --env-file ./.env.test up -d",
+    "docker:test:down": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml down",
     "prisma:migration:dev": "npx prisma migrate dev && npm run prisma:generate",
     "prisma:migration:deploy": "npx prisma migrate deploy",
     "prisma:generate": "npx prisma generate"
