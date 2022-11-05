@@ -1,0 +1,18 @@
+FROM node:16-slim
+
+RUN apt-get update
+RUN apt-get install -y openssl make gcc g++ python3 procps
+
+WORKDIR /app
+
+COPY package.json /app
+COPY package-lock.json /app
+COPY .npmrc /app
+
+RUN npm install 
+
+RUN npm rebuild bcrypt -build-from-source && apt-get --purge remove -y make gcc g++ python3
+
+COPY . /app
+
+CMD ["npm", "run", "start:dev"]
