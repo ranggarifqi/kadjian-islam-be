@@ -121,6 +121,8 @@ describe('AuthService', () => {
         lastName: 'Alan',
         rawPassword: 'fulanalan',
         gender: EGender.IKHWAN,
+        provinceId: '11',
+        districtId: '1101',
       });
 
       expect(stubs.createCredential).toHaveBeenCalledWith({
@@ -136,6 +138,8 @@ describe('AuthService', () => {
         lastName: 'Alan',
         credentialId: 'someuuid',
         gender: EGender.IKHWAN,
+        provinceId: '11',
+        districtId: '1101',
       });
     });
 
@@ -155,7 +159,7 @@ describe('AuthService', () => {
 
       expect(stubs.sendHtmlEmail).toHaveBeenCalledWith({
         to: 'fulan@alan.com',
-        subject: "Rangga's Money Manager - User Verification",
+        subject: 'User Verification',
         body: `<p>Hi Fulan Alan, click on this <a href='${process.env.BASE_URL}/auth/verify?token=theToken'>link</a> to verify your account</p>`,
       });
     });

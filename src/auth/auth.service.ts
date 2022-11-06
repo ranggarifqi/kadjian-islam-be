@@ -39,7 +39,15 @@ export class AuthService extends BaseAuthService {
   };
 
   async registerUser(payload: IRegisterUser): Promise<IUser> {
-    const { email, rawPassword, firstName, lastName, gender } = payload;
+    const {
+      email,
+      rawPassword,
+      firstName,
+      lastName,
+      gender,
+      provinceId,
+      districtId,
+    } = payload;
 
     const uuid = this.uuid.generateV4();
     const hashedPassword = await this.hasher.hash(rawPassword);
@@ -58,12 +66,14 @@ export class AuthService extends BaseAuthService {
       lastName,
       gender,
       credentialId: credential.id,
+      provinceId,
+      districtId,
     });
 
     /** Send Email. Intentionaly not await */
     this.emailer.sendHtmlEmail({
       to: email,
-      subject: "Rangga's Money Manager - User Verification",
+      subject: 'User Verification',
       body: this.getVerificationEmailBody({
         firstName,
         lastName,
