@@ -12,11 +12,7 @@ import {
   ICredential,
   MockCredentialRepository,
 } from 'src/common/repos/credential';
-import {
-  BaseUserRepository,
-  EGender,
-  MockUserRepository,
-} from 'src/common/repos/user';
+import { EGender } from 'src/common/repos/user';
 
 import { AuthService } from './auth.service';
 import { MockJWTService } from './mock.service';
@@ -24,7 +20,6 @@ import { CredentialFactory } from 'src/common/testUtil/factories';
 
 describe('AuthService', () => {
   let credentialRepository: BaseCredentialRepository;
-  let userRepository: BaseUserRepository;
 
   let service: AuthService;
   let emailService: EmailService;
@@ -43,10 +38,6 @@ describe('AuthService', () => {
         {
           provide: BaseCredentialRepository,
           useClass: MockCredentialRepository,
-        },
-        {
-          provide: BaseUserRepository,
-          useClass: MockUserRepository,
         },
 
         AuthService,
@@ -70,7 +61,6 @@ describe('AuthService', () => {
     }).compile();
 
     credentialRepository = module.get(BaseCredentialRepository);
-    userRepository = module.get(BaseUserRepository);
 
     service = module.get<AuthService>(AuthService);
     emailService = module.get<EmailService>(EmailService);
@@ -91,7 +81,6 @@ describe('AuthService', () => {
         .mockReturnValue('someuuid');
 
       stubs.createCredential = jest.spyOn(credentialRepository, 'create');
-      stubs.createUser = jest.spyOn(userRepository, 'create');
 
       stubs.sendHtmlEmail = jest
         .spyOn(emailService, 'sendHtmlEmail')
@@ -130,16 +119,14 @@ describe('AuthService', () => {
         email: 'fulan@alan.com',
         password: 'hashedPassword',
         verifyToken: 'theToken',
-      });
-
-      expect(stubs.createUser).toHaveBeenCalledWith({
-        id: 'someuuid',
-        firstName: 'Fulan',
-        lastName: 'Alan',
-        credentialId: 'someuuid',
-        gender: EGender.IKHWAN,
-        provinceId: '11',
-        districtId: '1101',
+        user: {
+          id: 'someuuid',
+          firstName: 'Fulan',
+          lastName: 'Alan',
+          gender: EGender.IKHWAN,
+          provinceId: '11',
+          districtId: '1101',
+        },
       });
     });
 

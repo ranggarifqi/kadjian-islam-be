@@ -5,7 +5,6 @@ import { config } from 'src/common/config';
 import { EmailModule } from 'src/common/email';
 import { HasherModule } from 'src/common/hasher';
 import { CredentialRepository } from 'src/common/repos/credential';
-import { UserRepository } from 'src/common/repos/user';
 import { UUIDModule } from 'src/common/uuid';
 
 import { AuthController } from './auth.controller';
@@ -15,7 +14,6 @@ import { AuthService } from './auth.service';
 @Module({
   imports: [
     CredentialRepository,
-    UserRepository,
 
     HasherModule,
     UUIDModule,

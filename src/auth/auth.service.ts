@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { EmailService } from 'src/common/email';
 import { HasherService } from 'src/common/hasher';
 import { BaseCredentialRepository } from 'src/common/repos/credential';
-import { BaseUserRepository, IUser } from 'src/common/repos/user';
+import { IUser } from 'src/common/repos/user';
 import { BaseUUIDService } from 'src/common/uuid';
 
 import { BaseAuthService, IRegisterUser } from './auth.interface';
@@ -16,7 +16,6 @@ const LOGIN_FAILED = 'Invalid Email or Password';
 export class AuthService extends BaseAuthService {
   constructor(
     private credentialRepo: BaseCredentialRepository,
-    private userRepo: BaseUserRepository,
 
     private emailer: EmailService,
     private hasher: HasherService,
