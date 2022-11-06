@@ -1,4 +1,4 @@
-import { IUser } from 'src/common/repos/user';
+import { GenderStr, IUser } from 'src/common/repos/user';
 
 export abstract class BaseAuthService {
   abstract registerUser(payload: IRegisterUser): Promise<IUser>;
@@ -11,4 +11,5 @@ export interface IRegisterUser {
   rawPassword: string;
   firstName: string;
   lastName: string;
+  gender: GenderStr;
 }
