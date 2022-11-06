@@ -12,7 +12,11 @@ import {
   ICredential,
   MockCredentialRepository,
 } from 'src/common/repos/credential';
-import { BaseUserRepository, MockUserRepository } from 'src/common/repos/user';
+import {
+  BaseUserRepository,
+  EGender,
+  MockUserRepository,
+} from 'src/common/repos/user';
 
 import { AuthService } from './auth.service';
 import { MockJWTService } from './mock.service';
@@ -100,6 +104,7 @@ describe('AuthService', () => {
         firstName: 'Fulan',
         lastName: 'Alan',
         rawPassword: 'fulanalan',
+        gender: EGender.IKHWAN,
       });
 
       expect(stubs.hasher).toHaveBeenCalledWith('fulanalan');
@@ -115,6 +120,7 @@ describe('AuthService', () => {
         firstName: 'Fulan',
         lastName: 'Alan',
         rawPassword: 'fulanalan',
+        gender: EGender.IKHWAN,
       });
 
       expect(stubs.createCredential).toHaveBeenCalledWith({
@@ -129,6 +135,7 @@ describe('AuthService', () => {
         firstName: 'Fulan',
         lastName: 'Alan',
         credentialId: 'someuuid',
+        gender: EGender.IKHWAN,
       });
     });
 
@@ -143,6 +150,7 @@ describe('AuthService', () => {
         firstName: 'Fulan',
         lastName: 'Alan',
         rawPassword: 'fulanalan',
+        gender: EGender.IKHWAN,
       });
 
       expect(stubs.sendHtmlEmail).toHaveBeenCalledWith({

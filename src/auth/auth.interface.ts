@@ -12,4 +12,6 @@ export interface IRegisterUser {
   firstName: string;
   lastName: string;
   gender: GenderStr;
+  provinceId?: string | null;
+  districtId?: string | null;
 }

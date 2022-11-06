@@ -39,7 +39,7 @@ export class AuthService extends BaseAuthService {
   };
 
   async registerUser(payload: IRegisterUser): Promise<IUser> {
-    const { email, rawPassword, firstName, lastName } = payload;
+    const { email, rawPassword, firstName, lastName, gender } = payload;
 
     const uuid = this.uuid.generateV4();
     const hashedPassword = await this.hasher.hash(rawPassword);
@@ -56,6 +56,7 @@ export class AuthService extends BaseAuthService {
       id: uuid,
       firstName,
       lastName,
+      gender,
       credentialId: credential.id,
     });
 
