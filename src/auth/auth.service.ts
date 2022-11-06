@@ -58,16 +58,14 @@ export class AuthService extends BaseAuthService {
       email,
       password: hashedPassword,
       verifyToken: verificationToken,
-    });
-
-    const user = await this.userRepo.create({
-      id: uuid,
-      firstName,
-      lastName,
-      gender,
-      credentialId: credential.id,
-      provinceId,
-      districtId,
+      user: {
+        id: uuid,
+        firstName,
+        lastName,
+        gender,
+        provinceId,
+        districtId,
+      },
     });
 
     /** Send Email. Intentionaly not await */
@@ -81,7 +79,9 @@ export class AuthService extends BaseAuthService {
       }),
     });
 
-    return user;
+    // We're sure that User must not empty
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return credential.User!;
   }
 
   async verifyUser(token: string): Promise<boolean> {

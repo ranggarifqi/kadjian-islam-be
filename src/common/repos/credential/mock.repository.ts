@@ -8,7 +8,7 @@ import {
 @Injectable()
 export class MockCredentialRepository extends BaseCredentialRepository {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  findOne(where: Partial<ICredential>): Promise<ICreateCredential | null> {
+  findOne(where: Partial<ICredential>): Promise<ICredential | null> {
     return Promise.resolve(null);
   }
 
