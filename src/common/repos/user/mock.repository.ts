@@ -5,9 +5,14 @@ export class MockUserRepository extends BaseUserRepository {
   create(payload: ICreateUser): Promise<IUser> {
     return Promise.resolve({
       id: 'someuuid',
+      credentialId: payload.credentialId,
+      provinceId: payload.provinceId ?? null,
+      districtId: payload.districtId ?? null,
       firstName: payload.firstName,
       lastName: payload.lastName,
-      credentialId: payload.credentialId,
+      gender: payload.gender,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
   }
 }

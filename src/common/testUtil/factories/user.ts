@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { User } from '@prisma/client';
+import { EGender } from 'src/common/repos/user';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { TestFactory } from './factory';
@@ -9,9 +10,12 @@ export class UserFactory extends TestFactory<User> {
     const id = uuidv4();
     return {
       id,
+      credentialId: id,
       firstName: faker.name.firstName(),
       lastName: faker.name.lastName(),
-      credentialId: id,
+      gender: EGender.IKHWAN,
+      provinceId: null,
+      districtId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       ...data,

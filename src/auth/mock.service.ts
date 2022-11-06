@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { EGender } from 'src/common/repos/user';
 import { BaseAuthService, IRegisterUser } from './auth.interface';
 
 @Injectable()
@@ -16,9 +17,12 @@ export class MockAuthService extends BaseAuthService {
   registerUser(_payload: IRegisterUser): Promise<User> {
     return Promise.resolve({
       id: 'someuuid',
+      credentialId: 'somecredentialuuid',
+      provinceId: null,
+      districtId: null,
       firstName: 'Fulan',
       lastName: 'Alan',
-      credentialId: 'somecredentialuuid',
+      gender: EGender.IKHWAN,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
