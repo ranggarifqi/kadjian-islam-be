@@ -1,6 +1,6 @@
 export enum EGender {
   IKHWAN = 'IKHWAN',
-  AKHWAT = 'AKWHAT',
+  AKHWAT = 'AKHWAT',
 }
 
 export type GenderStr = keyof typeof EGender;
