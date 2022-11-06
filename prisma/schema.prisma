@@ -2,12 +2,18 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  IKHWAN
+  AKHWAT
 }
 
 model Credential {
@@ -20,26 +26,40 @@ model Credential {
 }
 
 model User {
-  id           String     @id @default(uuid()) @db.Uuid
+  id           String   @id @default(uuid()) @db.Uuid
   firstName    String
   lastName     String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  credentialId String     @unique @db.Uuid
-  credential   Credential @relation(fields: [credentialId], references: [id])
+  gender       Gender?  @default(IKHWAN)
+  provinceId   String?
+  districtId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  credentialId String   @unique @db.Uuid
+
+  credential Credential @relation(fields: [credentialId], references: [id])
+  District   District?  @relation(fields: [districtId], references: [id])
+  Province   Province?  @relation(fields: [provinceId], references: [id])
+
+  @@index([provinceId])
+  @@index([districtId])
+  @@index([credentialId])
 }
 
 model District {
-  id         String   @id
+  id         String @id
   provinceId String
   name       String
-  Province   Province @relation(fields: [provinceId], references: [id])
+
+  Province Province @relation(fields: [provinceId], references: [id])
+  User     User[]
 
   @@index([provinceId])
 }
 
 model Province {
-  id        String     @id
-  name      String
+  id   String @id
+  name String
+
   districts District[]
+  User      User[]
 }

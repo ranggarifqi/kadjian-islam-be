@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { EmailService } from 'src/common/email';
 import { HasherService } from 'src/common/hasher';
 import { BaseCredentialRepository } from 'src/common/repos/credential';
-import { BaseUserRepository, IUser } from 'src/common/repos/user';
+import { IUser } from 'src/common/repos/user';
 import { BaseUUIDService } from 'src/common/uuid';
 
 import { BaseAuthService, IRegisterUser } from './auth.interface';
@@ -16,7 +16,6 @@ const LOGIN_FAILED = 'Invalid Email or Password';
 export class AuthService extends BaseAuthService {
   constructor(
     private credentialRepo: BaseCredentialRepository,
-    private userRepo: BaseUserRepository,
 
     private emailer: EmailService,
     private hasher: HasherService,
@@ -39,7 +38,15 @@ export class AuthService extends BaseAuthService {
   };
 
   async registerUser(payload: IRegisterUser): Promise<IUser> {
-    const { email, rawPassword, firstName, lastName } = payload;
+    const {
+      email,
+      rawPassword,
+      firstName,
+      lastName,
+      gender,
+      provinceId,
+      districtId,
+    } = payload;
 
     const uuid = this.uuid.generateV4();
     const hashedPassword = await this.hasher.hash(rawPassword);
@@ -50,19 +57,20 @@ export class AuthService extends BaseAuthService {
       email,
       password: hashedPassword,
       verifyToken: verificationToken,
-    });
-
-    const user = await this.userRepo.create({
-      id: uuid,
-      firstName,
-      lastName,
-      credentialId: credential.id,
+      user: {
+        id: uuid,
+        firstName,
+        lastName,
+        gender,
+        provinceId,
+        districtId,
+      },
     });
 
     /** Send Email. Intentionaly not await */
     this.emailer.sendHtmlEmail({
       to: email,
-      subject: "Rangga's Money Manager - User Verification",
+      subject: 'User Verification',
       body: this.getVerificationEmailBody({
         firstName,
         lastName,
@@ -70,7 +78,9 @@ export class AuthService extends BaseAuthService {
       }),
     });
 
-    return user;
+    // We're sure that User must not empty
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return credential.User!;
   }
 
   async verifyUser(token: string): Promise<boolean> {

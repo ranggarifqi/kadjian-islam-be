@@ -10,8 +10,8 @@ export class CredentialFactory extends TestFactory<Credential> {
     return {
       id: uuidv4(),
       email: faker.internet.email(),
-      password: faker.random.alphaNumeric(),
-      verifyToken: faker.random.alphaNumeric(),
+      password: faker.random.alphaNumeric(10),
+      verifyToken: faker.random.alphaNumeric(10),
       verifiedAt: null,
       ...data,
     };

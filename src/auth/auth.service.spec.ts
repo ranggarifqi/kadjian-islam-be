@@ -12,7 +12,7 @@ import {
   ICredential,
   MockCredentialRepository,
 } from 'src/common/repos/credential';
-import { BaseUserRepository, MockUserRepository } from 'src/common/repos/user';
+import { EGender } from 'src/common/repos/user';
 
 import { AuthService } from './auth.service';
 import { MockJWTService } from './mock.service';
@@ -20,7 +20,6 @@ import { CredentialFactory } from 'src/common/testUtil/factories';
 
 describe('AuthService', () => {
   let credentialRepository: BaseCredentialRepository;
-  let userRepository: BaseUserRepository;
 
   let service: AuthService;
   let emailService: EmailService;
@@ -39,10 +38,6 @@ describe('AuthService', () => {
         {
           provide: BaseCredentialRepository,
           useClass: MockCredentialRepository,
-        },
-        {
-          provide: BaseUserRepository,
-          useClass: MockUserRepository,
         },
 
         AuthService,
@@ -66,7 +61,6 @@ describe('AuthService', () => {
     }).compile();
 
     credentialRepository = module.get(BaseCredentialRepository);
-    userRepository = module.get(BaseUserRepository);
 
     service = module.get<AuthService>(AuthService);
     emailService = module.get<EmailService>(EmailService);
@@ -87,7 +81,6 @@ describe('AuthService', () => {
         .mockReturnValue('someuuid');
 
       stubs.createCredential = jest.spyOn(credentialRepository, 'create');
-      stubs.createUser = jest.spyOn(userRepository, 'create');
 
       stubs.sendHtmlEmail = jest
         .spyOn(emailService, 'sendHtmlEmail')
@@ -100,6 +93,7 @@ describe('AuthService', () => {
         firstName: 'Fulan',
         lastName: 'Alan',
         rawPassword: 'fulanalan',
+        gender: EGender.IKHWAN,
       });
 
       expect(stubs.hasher).toHaveBeenCalledWith('fulanalan');
@@ -115,6 +109,9 @@ describe('AuthService', () => {
         firstName: 'Fulan',
         lastName: 'Alan',
         rawPassword: 'fulanalan',
+        gender: EGender.IKHWAN,
+        provinceId: '11',
+        districtId: '1101',
       });
 
       expect(stubs.createCredential).toHaveBeenCalledWith({
@@ -122,13 +119,14 @@ describe('AuthService', () => {
         email: 'fulan@alan.com',
         password: 'hashedPassword',
         verifyToken: 'theToken',
-      });
-
-      expect(stubs.createUser).toHaveBeenCalledWith({
-        id: 'someuuid',
-        firstName: 'Fulan',
-        lastName: 'Alan',
-        credentialId: 'someuuid',
+        user: {
+          id: 'someuuid',
+          firstName: 'Fulan',
+          lastName: 'Alan',
+          gender: EGender.IKHWAN,
+          provinceId: '11',
+          districtId: '1101',
+        },
       });
     });
 
@@ -143,11 +141,12 @@ describe('AuthService', () => {
         firstName: 'Fulan',
         lastName: 'Alan',
         rawPassword: 'fulanalan',
+        gender: EGender.IKHWAN,
       });
 
       expect(stubs.sendHtmlEmail).toHaveBeenCalledWith({
         to: 'fulan@alan.com',
-        subject: "Rangga's Money Manager - User Verification",
+        subject: 'User Verification',
         body: `<p>Hi Fulan Alan, click on this <a href='${process.env.BASE_URL}/auth/verify?token=theToken'>link</a> to verify your account</p>`,
       });
     });

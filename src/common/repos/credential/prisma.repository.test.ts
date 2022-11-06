@@ -1,7 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Credential } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+
 import * as factory from 'src/common/testUtil/factories';
-import { TestFactory } from 'src/common/testUtil/factories';
+import {
+  CredentialFactory,
+  TestFactory,
+  UserFactory,
+} from 'src/common/testUtil/factories';
 import { truncateTables } from 'src/common/testUtil/teardown';
 import { Dict } from 'src/common/types';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -71,31 +77,110 @@ describe('PrismaCredentialRepository Integration Tests', () => {
 
   describe('create()', () => {
     it('should create data successfully', async () => {
-      const EMAIL = 'fulan@ranggarifqi.com';
-      const PASSWORD = 'somehashedpassword';
-      const VERIFY_TOKEN = 'someToken';
+      const dummyCredential = CredentialFactory.getDummyData();
+      const dummyUser = UserFactory.getDummyData();
+
+      const before = await prismaService.credential.findMany();
+      expect(before).toHaveLength(0);
+
+      const result = await repository.create({
+        id: dummyCredential.id,
+        email: dummyCredential.email,
+        password: dummyCredential.password,
+        verifyToken: dummyCredential.verifyToken,
+        user: {
+          id: dummyCredential.id,
+          firstName: dummyUser.firstName,
+          lastName: dummyUser.lastName,
+          gender: dummyUser.gender,
+          provinceId: dummyUser.provinceId,
+          districtId: dummyUser.districtId,
+        },
+      });
+
+      const after = await prismaService.credential.findMany();
+      expect(after).toHaveLength(1);
+      expect(after[0].email).toBe(dummyCredential.email);
+      expect(after[0].password).toBe(dummyCredential.password);
+      expect(after[0].verifyToken).toBe(dummyCredential.verifyToken);
+      expect(after[0].verifiedAt).toBeNull();
+
+      expect(result.id).toBe(after[0].id);
+      expect(result.email).toBe(dummyCredential.email);
+      expect(result.password).toBe(dummyCredential.password);
+      expect(result.verifyToken).toBe(dummyCredential.verifyToken);
+      expect(result.verifiedAt).toBeNull();
+    });
+
+    it('should create related user data', async () => {
+      const dummyCredential = CredentialFactory.getDummyData();
+      const dummyUser = UserFactory.getDummyData();
 
       const before = await prismaService.user.findMany();
       expect(before).toHaveLength(0);
 
       const result = await repository.create({
-        email: EMAIL,
-        password: PASSWORD,
-        verifyToken: VERIFY_TOKEN,
+        id: dummyCredential.id,
+        email: dummyCredential.email,
+        password: dummyCredential.password,
+        verifyToken: dummyCredential.verifyToken,
+        user: {
+          id: dummyCredential.id,
+          firstName: dummyUser.firstName,
+          lastName: dummyUser.lastName,
+          gender: dummyUser.gender,
+          provinceId: dummyUser.provinceId,
+          districtId: dummyUser.districtId,
+        },
       });
 
-      const after = await prismaService.credential.findMany();
+      const after = await prismaService.user.findMany();
       expect(after).toHaveLength(1);
-      expect(after[0].email).toBe(EMAIL);
-      expect(after[0].password).toBe(PASSWORD);
-      expect(after[0].verifyToken).toBe(VERIFY_TOKEN);
-      expect(after[0].verifiedAt).toBeNull();
 
-      expect(result.id).toBe(after[0].id);
-      expect(result.email).toBe(EMAIL);
-      expect(result.password).toBe(PASSWORD);
-      expect(result.verifyToken).toBe(VERIFY_TOKEN);
-      expect(result.verifiedAt).toBeNull();
+      expect(after[0].id).toBe(result.User?.id);
+      expect(after[0].firstName).toBe(result.User?.firstName);
+      expect(after[0].lastName).toBe(result.User?.lastName);
+      expect(after[0].gender).toBe(result.User?.gender);
+      expect(after[0].provinceId).toBe(result.User?.provinceId);
+      expect(after[0].districtId).toBe(result.User?.districtId);
+      expect(after[0].credentialId).toBe(result.User?.credentialId);
+    });
+
+    it("should not create credential data if there's an error when inserting user", async () => {
+      const dummyCredential = CredentialFactory.getDummyData();
+      const dummyUser = UserFactory.getDummyData();
+
+      const credBefore = await prismaService.credential.findMany();
+      expect(credBefore).toHaveLength(0);
+
+      const userBefore = await prismaService.user.findMany();
+      expect(userBefore).toHaveLength(0);
+
+      try {
+        await repository.create({
+          id: dummyCredential.id,
+          email: dummyCredential.email,
+          password: dummyCredential.password,
+          verifyToken: dummyCredential.verifyToken,
+          user: {
+            id: dummyCredential.id,
+            firstName: dummyUser.firstName,
+            lastName: dummyUser.lastName,
+            gender: dummyUser.gender,
+            provinceId: 'asd', // will throw error cos we don't currently have province with id = 'asd
+            districtId: 'zzz',
+          },
+        });
+      } catch (error) {
+        expect(error).not.toBeUndefined();
+        expect(error).toBeInstanceOf(PrismaClientKnownRequestError);
+      } finally {
+        const credAfter = await prismaService.credential.findMany();
+        expect(credAfter).toHaveLength(0);
+
+        const userAfter = await prismaService.user.findMany();
+        expect(userAfter).toHaveLength(0);
+      }
     });
   });
 
