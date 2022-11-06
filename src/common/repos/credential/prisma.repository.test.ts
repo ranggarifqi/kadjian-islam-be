@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Credential } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 
 import * as factory from 'src/common/testUtil/factories';
 import {
@@ -143,6 +144,43 @@ describe('PrismaCredentialRepository Integration Tests', () => {
       expect(after[0].provinceId).toBe(result.User?.provinceId);
       expect(after[0].districtId).toBe(result.User?.districtId);
       expect(after[0].credentialId).toBe(result.User?.credentialId);
+    });
+
+    it("should not create credential data if there's an error when inserting user", async () => {
+      const dummyCredential = CredentialFactory.getDummyData();
+      const dummyUser = UserFactory.getDummyData();
+
+      const credBefore = await prismaService.credential.findMany();
+      expect(credBefore).toHaveLength(0);
+
+      const userBefore = await prismaService.user.findMany();
+      expect(userBefore).toHaveLength(0);
+
+      try {
+        await repository.create({
+          id: dummyCredential.id,
+          email: dummyCredential.email,
+          password: dummyCredential.password,
+          verifyToken: dummyCredential.verifyToken,
+          user: {
+            id: dummyCredential.id,
+            firstName: dummyUser.firstName,
+            lastName: dummyUser.lastName,
+            gender: dummyUser.gender,
+            provinceId: 'asd', // will throw error cos we don't currently have province with id = 'asd
+            districtId: 'zzz',
+          },
+        });
+      } catch (error) {
+        expect(error).not.toBeUndefined();
+        expect(error).toBeInstanceOf(PrismaClientKnownRequestError);
+      } finally {
+        const credAfter = await prismaService.credential.findMany();
+        expect(credAfter).toHaveLength(0);
+
+        const userAfter = await prismaService.user.findMany();
+        expect(userAfter).toHaveLength(0);
+      }
     });
   });
 
