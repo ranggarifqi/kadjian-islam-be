@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, Length } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, Length } from 'class-validator';
+import { GenderStr } from 'src/common/repos/user';
 
 export class RegisterUserDTO {
   @IsEmail()
@@ -13,6 +14,15 @@ export class RegisterUserDTO {
 
   @IsNotEmpty()
   lastName: string;
+
+  @IsNotEmpty()
+  gender: GenderStr;
+
+  @IsOptional()
+  provinceId?: string;
+
+  @IsOptional()
+  districtId?: string;
 }
 
 export class LoginDTO {

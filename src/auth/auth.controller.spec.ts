@@ -9,6 +9,7 @@ import { AuthController } from './auth.controller';
 import { BaseAuthService } from './auth.interface';
 import { MockAuthService } from './mock.service';
 import { LoginDTO, RegisterUserDTO } from './auth.dto';
+import { EGender } from 'src/common/repos/user';
 
 describe('AuthController', () => {
   const BASE_ENDPOINT_URL = '/auth';
@@ -61,6 +62,7 @@ describe('AuthController', () => {
         rawPassword: 'fulan123',
         firstName: 'Fulan',
         lastName: 'Alan',
+        gender: EGender.IKHWAN,
       };
       seeds.payload = payload;
     });
@@ -189,6 +191,9 @@ describe('AuthController', () => {
           id: 'someuuid',
           firstName: 'Fulan',
           lastName: 'Alan',
+          gender: EGender.IKHWAN,
+          provinceId: null,
+          districtId: null,
           credentialId: 'somecredentialuuid',
           createdAt: '2022-11-29T17:00:00.000Z',
           updatedAt: '2022-11-29T17:00:00.000Z',
@@ -200,6 +205,7 @@ describe('AuthController', () => {
         rawPassword: 'fulan123',
         firstName: 'Fulan',
         lastName: 'Alan',
+        gender: EGender.IKHWAN,
       });
     });
   });
