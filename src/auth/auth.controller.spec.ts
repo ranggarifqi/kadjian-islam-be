@@ -195,8 +195,8 @@ describe('AuthController', () => {
           provinceId: null,
           districtId: null,
           credentialId: 'somecredentialuuid',
-          createdAt: '2022-11-29T17:00:00.000Z',
-          updatedAt: '2022-11-29T17:00:00.000Z',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         },
       });
 
