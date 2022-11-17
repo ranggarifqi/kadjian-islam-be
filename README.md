@@ -93,3 +93,5 @@ Don't mix them up !
 ## Stay in touch
 
 - Author - [Rangga Rifqi Pratama](https://ranggarifqi.com)
+
+Test CI
