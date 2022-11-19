@@ -1,6 +1,15 @@
 pipeline {
   agent any
 
+  tools {
+    nodejs 'Node v16.17.0'
+  }
+
+  environment {
+    CI = 'true'
+    NPM_CONFIG_CACHE = '${WORKSPACE}/.npm'
+  }
+
   stages {
     stage("build") {
       steps {
@@ -8,15 +17,9 @@ pipeline {
       }
     }
 
-    stage("unit-test") {
+    stage("test") {
       steps {
         sh 'npm test'
-      }
-    }
-
-    stage("integration-test") {
-      steps {
-        echo 'Do integration test'
       }
     }
   }
