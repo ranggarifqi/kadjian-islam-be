@@ -34,8 +34,6 @@ pipeline {
       }
       steps {
         sh 'npm test'
-      }
-      steps {
         sh 'npm run test:e2e'
       }
     }
