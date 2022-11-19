@@ -32,8 +32,8 @@
     "docker:test:down": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml down",
     "docker:test:ci": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml up -d",
     "prisma:migration:draft": "npx prisma migrate dev --create-only",
-    "prisma:migration:apply": "npx prisma migrate dev && npm run prisma:generate",
-    "prisma:migration:deploy": "npx prisma migrate deploy && prisma:migration:seed",
+    "prisma:migration:apply": "npx prisma migrate dev && npm run prisma:migration:seed && npm run prisma:generate",
+    "prisma:migration:deploy": "npx prisma migrate deploy && npm run prisma:migration:seed",
     "prisma:migration:seed": "npx prisma db seed",
     "prisma:generate": "npx prisma generate"
   },
