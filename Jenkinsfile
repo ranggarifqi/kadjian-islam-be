@@ -14,7 +14,7 @@ pipeline {
       }
     }
 
-    state("integration-test") {
+    stage("integration-test") {
       steps {
         echo 'Do integration test'
       }
