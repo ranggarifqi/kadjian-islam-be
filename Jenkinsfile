@@ -34,8 +34,8 @@ pipeline {
         VERIFY_USER_FAILED_URL='https://www.google.com'
       }
       steps {
+        sh 'echo $POSTGRES_USER}:$POSTGRES_PASSWORD}'
         sh 'npm test'
-        sh 'echo ${POSTGRES_USER}:${POSTGRES_PASSWORD}'
       }
     }
   }
