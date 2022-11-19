@@ -1,5 +1,14 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'node:lts-alpine'
+      args '-p 3000:3000 -p 5000:5000'
+    }
+  }
+
+  environment {
+    CI = 'true'
+  }
 
   stages {
     stage("build") {
@@ -8,15 +17,9 @@ pipeline {
       }
     }
 
-    stage("unit-test") {
+    stage("test") {
       steps {
         sh 'npm test'
-      }
-    }
-
-    stage("integration-test") {
-      steps {
-        echo 'Do integration test'
       }
     }
   }
