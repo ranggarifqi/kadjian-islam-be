@@ -17,7 +17,8 @@ enum Gender {
 }
 
 model AccessLevel {
-  name String @id()
+  name       String       @id()
+  Credential Credential[]
 }
 
 model Credential {
@@ -27,6 +28,9 @@ model Credential {
   verifyToken String?
   verifiedAt  DateTime?
   User        User?
+  accessLevel String    @default("User")
+
+  AccessLevel AccessLevel @relation(fields: [accessLevel], references: [name])
 }
 
 model User {
