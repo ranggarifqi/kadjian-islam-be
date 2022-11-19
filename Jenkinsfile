@@ -30,7 +30,14 @@ pipeline {
         MAIL_PASSWORD = credentials('mail-password-ci')
         VERIFY_USER_SUCCESS_URL='https://ranggarifqi.com'
         VERIFY_USER_FAILED_URL='https://www.google.com'
-        DATABASE_URL = sh(returnStdout: true, script: 'echo asd').trim()
+        DATABASE_URL = """
+          ${
+            sh(
+              returnStdout: true, 
+              script: 'echo postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:54322/$POSTGRES_DB?connect_timeout=300'
+            ).trim()
+          }
+        """
       }
       steps {
         sh 'echo $POSTGRES_USER : $POSTGRES_PASSWORD'
