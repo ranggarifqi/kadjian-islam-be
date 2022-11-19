@@ -33,7 +33,8 @@
     "docker:test:ci": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml up -d",
     "prisma:migration:draft": "npx prisma migrate dev --create-only",
     "prisma:migration:apply": "npx prisma migrate dev && npm run prisma:generate",
-    "prisma:migration:deploy": "npx prisma migrate deploy",
+    "prisma:migration:deploy": "npx prisma migrate deploy && prisma:migration:seed",
+    "prisma:migration:seed": "npx prisma db seed",
     "prisma:generate": "npx prisma generate"
   },
   "dependencies": {
@@ -87,5 +88,8 @@
     "ts-node": "^10.0.0",
     "tsconfig-paths": "4.0.0",
     "typescript": "^4.3.5"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seeds/index.ts"
   }
 }
