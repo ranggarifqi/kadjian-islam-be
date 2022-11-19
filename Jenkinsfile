@@ -33,8 +33,7 @@ pipeline {
         DATABASE_URL = sh(returnStdout: true, script: 'echo postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:54322/$POSTGRES_DB?connect_timeout=300').trim()
       }
       steps {
-        sh 'echo $POSTGRES_USER : $POSTGRES_PASSWORD'
-        sh 'echo $DATABASE_URL'
+        sh 'printenv'
         sh 'npm test'
       }
     }
