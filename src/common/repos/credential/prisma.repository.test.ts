@@ -11,7 +11,7 @@ import {
 import { truncateTables } from 'src/common/testUtil/teardown';
 import { Dict } from 'src/common/types';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ICredential } from './credentialRepo.interface';
+import { EAccessLevel, ICredential } from './credentialRepo.interface';
 import { PrismaCredentialRepository } from './prisma.repository';
 
 describe('PrismaCredentialRepository Integration Tests', () => {
@@ -88,6 +88,7 @@ describe('PrismaCredentialRepository Integration Tests', () => {
         email: dummyCredential.email,
         password: dummyCredential.password,
         verifyToken: dummyCredential.verifyToken,
+        accessLevel: EAccessLevel.USER,
         user: {
           id: dummyCredential.id,
           firstName: dummyUser.firstName,
@@ -124,6 +125,7 @@ describe('PrismaCredentialRepository Integration Tests', () => {
         email: dummyCredential.email,
         password: dummyCredential.password,
         verifyToken: dummyCredential.verifyToken,
+        accessLevel: EAccessLevel.USER,
         user: {
           id: dummyCredential.id,
           firstName: dummyUser.firstName,
@@ -162,6 +164,7 @@ describe('PrismaCredentialRepository Integration Tests', () => {
           email: dummyCredential.email,
           password: dummyCredential.password,
           verifyToken: dummyCredential.verifyToken,
+          accessLevel: EAccessLevel.USER,
           user: {
             id: dummyCredential.id,
             firstName: dummyUser.firstName,

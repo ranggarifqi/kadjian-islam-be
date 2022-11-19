@@ -3,7 +3,10 @@ import { JwtService } from '@nestjs/jwt';
 
 import { EmailService } from 'src/common/email';
 import { HasherService } from 'src/common/hasher';
-import { BaseCredentialRepository } from 'src/common/repos/credential';
+import {
+  BaseCredentialRepository,
+  EAccessLevel,
+} from 'src/common/repos/credential';
 import { IUser } from 'src/common/repos/user';
 import { BaseUUIDService } from 'src/common/uuid';
 
@@ -57,6 +60,7 @@ export class AuthService extends BaseAuthService {
       email,
       password: hashedPassword,
       verifyToken: verificationToken,
+      accessLevel: EAccessLevel.USER,
       user: {
         id: uuid,
         firstName,
