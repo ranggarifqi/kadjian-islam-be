@@ -18,8 +18,23 @@ pipeline {
     }
 
     stage("test") {
+      environment {
+        BASE_URL = 'http://localhost:3000'
+        JWT_SECRET = credentials('jwt-secret')
+        POSTGRES_USER = 'kadjianislam'
+        POSTGRES_PASSWORD = credentials('pg-password-ci')
+        POSTGRES_DB = 'kadjianislamtest'
+        MAIL_HOST = credentials('mail-host-ci')
+        MAIL_PORT = credentials('mail-port-ci')
+        MAIL_USER = 'rangga@ranggarifqi.com'
+        MAIL_PASSWORD = credentials('mail-password-ci')
+        VERIFY_USER_SUCCESS_URL='https://ranggarifqi.com'
+        VERIFY_USER_FAILED_URL='https://www.google.com'
+        DATABASE_URL = sh(returnStdout: true, script: 'echo postgresql://kadjianislam:$POSTGRES_PASSWORD@localhost:54322/kadjianislamtest?connect_timeout=300').trim()
+      }
       steps {
         sh 'npm test'
+        sh 'npm run test:e2e:ci'
       }
     }
   }
