@@ -51,7 +51,7 @@ And then do this
 
 ```bash
 # Go inside the container
-$ npm run docker:exec
+$ npm run docker:dev:exec
 
 # Generate the Draft Migration Script (Dev Only)
 $ npm run prisma:migration:draft -- --name {MIGRATION_NAME}
