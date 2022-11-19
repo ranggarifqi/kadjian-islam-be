@@ -9,6 +9,7 @@ export const truncateTables = async (prismaService: PrismaService) => {
     '_prisma_migrations',
     'Province',
     'District',
+    'AccessLevel',
   ];
 
   const tables = allTableNames

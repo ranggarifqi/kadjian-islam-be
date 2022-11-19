@@ -63,6 +63,7 @@ describe('PrismaCredentialRepository Integration Tests', () => {
         password: seeds.credential.password,
         verifiedAt: null,
         verifyToken: seeds.credential.verifyToken,
+        accessLevel: EAccessLevel.USER,
       } as ICredential);
     });
 
