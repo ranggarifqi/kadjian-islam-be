@@ -38,7 +38,7 @@ export interface IOrgRequestCreation {
 }
 
 export abstract class BaseOrgRequestRepo {
-  abstract createOrgRequest(
+  abstract create(
     payload: IOrgRequestCreation,
     creatorId: string,
   ): Promise<IOrgRequest>;

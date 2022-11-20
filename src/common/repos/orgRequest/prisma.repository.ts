@@ -12,7 +12,7 @@ export class OrgRequestPrismaRepository extends BaseOrgRequestRepo {
     super();
   }
 
-  async createOrgRequest(
+  async create(
     payload: IOrgRequestCreation,
     creatorId: string,
   ): Promise<IOrgRequest> {
