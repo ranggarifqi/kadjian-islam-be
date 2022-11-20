@@ -123,6 +123,7 @@ export class AuthService extends BaseAuthService {
       userId: credential.id,
       email: credential.email,
       isVerified: !!credential.verifiedAt,
+      accessLevel: credential.accessLevel,
     } as IUserCredential);
 
     return jwt;
