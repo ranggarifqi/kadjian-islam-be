@@ -142,3 +142,18 @@ model Organisation {
   @@index([createdBy])
   @@index([updatedBy])
 }
+
+model OrgUserRole {
+  name    String    @id()
+  OrgUser OrgUser[]
+}
+
+model OrgUser {
+  id             String  @id @default(uuid()) @db.Uuid
+  userid         String  @db.Uuid
+  organisationId String  @db.Uuid
+  orgUserRole    String  @default("Admin")
+  isSelected     Boolean @default(false)
+
+  OrgUserRole OrgUserRole @relation(fields: [orgUserRole], references: [name])
+}
