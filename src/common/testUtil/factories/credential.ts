@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TestFactory } from './factory';
+import { EAccessLevel } from 'src/common/repos/credential';
 
 export class CredentialFactory extends TestFactory<Credential> {
   static getDummyData = (data?: Partial<Credential>): Credential => {
@@ -13,6 +14,7 @@ export class CredentialFactory extends TestFactory<Credential> {
       password: faker.random.alphaNumeric(10),
       verifyToken: faker.random.alphaNumeric(10),
       verifiedAt: null,
+      accessLevel: EAccessLevel.USER,
       ...data,
     };
   };

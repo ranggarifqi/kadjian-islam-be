@@ -15,25 +15,28 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest --config=jest-unit.config.json --verbose",
+    "test:ci": "npm run prisma:generate && npm run test",
     "test:clearcache": "jest --config=jest-unit.config.json --clearCache",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "npm run docker:test && npm run test:e2e:init && npm run test:e2e:start",
-    "test:e2e:init": "NODE_ENV=test dotenv -e .env.test -- node ./test-db-connect.js && dotenv -e .env.test --  npm run prisma:migration:deploy",
+    "test:e2e:init": "NODE_ENV=test dotenv -e .env.test -- node ./test-db-connect.js && dotenv -e .env.test -- npm run test:e2e:reset && dotenv -e .env.test -- npx prisma migrate deploy",
+    "test:e2e:reset": "NODE_ENV=test dotenv -e .env.test -- npx prisma migrate reset --force",
     "test:e2e:start": "NODE_ENV=test dotenv -e .env.test -- jest --config=jest-e2e.config.json --runInBand --no-cache --verbose; npm run docker:test:down",
     "test:e2e:ci": "npm run docker:test:ci && npm run test:e2e:ci:init && npm run test:e2e:ci:start",
-    "test:e2e:ci:init": "NODE_ENV=test node ./test-db-connect.js && npm run prisma:migration:deploy",
+    "test:e2e:ci:init": "NODE_ENV=test node ./test-db-connect.js && npx prisma migrate reset --force && npm run prisma:migration:deploy",
     "test:e2e:ci:start": "NODE_ENV=test jest --config=jest-e2e.config.json --runInBand --no-cache --verbose; npm run docker:test:down",
     "docker:dev": "NODE_ENV=development docker-compose --env-file ./.env up",
     "docker:dev:build": "docker-compose --env-file ./.env build",
-    "docker:dev:exec": "docker-compose exec api sh",
+    "docker:dev:exec": "docker-compose exec api bash",
     "docker:test": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml --env-file ./.env.test up -d",
     "docker:test:down": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml down",
     "docker:test:ci": "NODE_ENV=test docker-compose --project-name kadjian-islam-test --file ./docker-compose.test.yml up -d",
     "prisma:migration:draft": "npx prisma migrate dev --create-only",
-    "prisma:migration:apply": "npx prisma migrate dev && npm run prisma:generate",
-    "prisma:migration:deploy": "npx prisma migrate deploy",
+    "prisma:migration:apply": "npx prisma migrate dev && npm run prisma:migration:seed && npm run prisma:generate",
+    "prisma:migration:deploy": "npx prisma migrate deploy && npm run prisma:migration:seed",
+    "prisma:migration:seed": "npx prisma db seed",
     "prisma:generate": "npx prisma generate"
   },
   "dependencies": {
@@ -87,5 +90,8 @@
     "ts-node": "^10.0.0",
     "tsconfig-paths": "4.0.0",
     "typescript": "^4.3.5"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seeds/index.ts"
   }
 }

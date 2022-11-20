@@ -9,6 +9,7 @@ import { BaseUUIDService, UUIDService } from 'src/common/uuid';
 import { EmailService, MockEmailService } from 'src/common/email';
 import {
   BaseCredentialRepository,
+  EAccessLevel,
   ICredential,
   MockCredentialRepository,
 } from 'src/common/repos/credential';
@@ -119,6 +120,7 @@ describe('AuthService', () => {
         email: 'fulan@alan.com',
         password: 'hashedPassword',
         verifyToken: 'theToken',
+        accessLevel: EAccessLevel.USER,
         user: {
           id: 'someuuid',
           firstName: 'Fulan',

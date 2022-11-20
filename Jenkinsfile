@@ -33,7 +33,7 @@ pipeline {
         DATABASE_URL = sh(returnStdout: true, script: 'echo postgresql://kadjianislam:$POSTGRES_PASSWORD@localhost:54322/kadjianislamtest?connect_timeout=300').trim()
       }
       steps {
-        sh 'npm test'
+        sh 'npm run test:ci'
         sh 'npm run test:e2e:ci'
       }
     }

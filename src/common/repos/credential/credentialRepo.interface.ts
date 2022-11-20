@@ -1,11 +1,18 @@
 import { ICreateUser, IUser } from '../user';
 
+export enum EAccessLevel {
+  USER = 'User',
+  ADMIN = 'Admin',
+  MODERATOR = 'Moderator',
+}
+
 export interface ICredential {
   id: string;
   email: string;
   password: string;
   verifyToken: string | null;
   verifiedAt: Date | null;
+  accessLevel: string;
   User?: IUser | null;
 }
 
@@ -15,6 +22,7 @@ export interface ICreateCredential {
   password: string;
   verifyToken: string | null;
   verifiedAt?: Date | null;
+  accessLevel: EAccessLevel;
   user: Omit<ICreateUser, 'credentialId'>;
 }
 

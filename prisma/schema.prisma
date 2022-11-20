@@ -16,6 +16,11 @@ enum Gender {
   AKHWAT
 }
 
+model AccessLevel {
+  name       String       @id()
+  Credential Credential[]
+}
+
 model Credential {
   id          String    @id @default(uuid()) @db.Uuid
   email       String    @unique
@@ -23,6 +28,9 @@ model Credential {
   verifyToken String?
   verifiedAt  DateTime?
   User        User?
+  accessLevel String    @default("User")
+
+  AccessLevel AccessLevel @relation(fields: [accessLevel], references: [name])
 }
 
 model User {

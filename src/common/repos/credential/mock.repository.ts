@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   BaseCredentialRepository,
+  EAccessLevel,
   ICreateCredential,
   ICredential,
 } from './credentialRepo.interface';
@@ -19,6 +20,7 @@ export class MockCredentialRepository extends BaseCredentialRepository {
       password: payload.password,
       verifiedAt: null,
       verifyToken: payload.verifyToken,
+      accessLevel: EAccessLevel.USER,
     });
   }
 
