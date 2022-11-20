@@ -15,6 +15,7 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest --config=jest-unit.config.json --verbose",
+    "test:ci": "npm run prisma:generate && npm run test",
     "test:clearcache": "jest --config=jest-unit.config.json --clearCache",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
