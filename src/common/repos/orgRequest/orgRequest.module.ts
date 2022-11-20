@@ -12,4 +12,4 @@ import { OrgRequestPrismaRepository } from './prisma.repository';
   ],
   exports: [BaseOrgRequestRepo],
 })
-export class OrgRequestModule {}
+export class OrgRequestRepository {}
