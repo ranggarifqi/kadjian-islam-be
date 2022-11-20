@@ -25,7 +25,7 @@
     "test:e2e:reset": "NODE_ENV=test dotenv -e .env.test -- npx prisma migrate reset --force",
     "test:e2e:start": "NODE_ENV=test dotenv -e .env.test -- jest --config=jest-e2e.config.json --runInBand --no-cache --verbose; npm run docker:test:down",
     "test:e2e:ci": "npm run docker:test:ci && npm run test:e2e:ci:init && npm run test:e2e:ci:start",
-    "test:e2e:ci:init": "NODE_ENV=test node ./test-db-connect.js && npm run prisma:migration:deploy",
+    "test:e2e:ci:init": "NODE_ENV=test node ./test-db-connect.js && && npx prisma migrate reset --force && npm run prisma:migration:deploy",
     "test:e2e:ci:start": "NODE_ENV=test jest --config=jest-e2e.config.json --runInBand --no-cache --verbose; npm run docker:test:down",
     "docker:dev": "NODE_ENV=development docker-compose --env-file ./.env up",
     "docker:dev:build": "docker-compose --env-file ./.env build",
