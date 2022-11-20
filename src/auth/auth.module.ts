@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, Provider } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 
 import { config } from 'src/common/config';
@@ -10,6 +11,13 @@ import { UUIDModule } from 'src/common/uuid';
 import { AuthController } from './auth.controller';
 import { BaseAuthService } from './auth.interface';
 import { AuthService } from './auth.service';
+import { AccessLevelGuard } from './strategies/accessLevel.guard';
+import { JWTStrategy } from './strategies/jwt.strategy';
+
+const accessLevelProvider: Provider = {
+  provide: APP_GUARD,
+  useClass: AccessLevelGuard,
+};
 
 @Module({
   imports: [
@@ -28,6 +36,8 @@ import { AuthService } from './auth.service';
       provide: BaseAuthService,
       useClass: AuthService,
     },
+    JWTStrategy,
+    accessLevelProvider,
   ],
   controllers: [AuthController],
 })
