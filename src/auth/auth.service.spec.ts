@@ -262,6 +262,7 @@ describe('AuthService', () => {
         userId: dummyCred.id,
         email: dummyCred.email,
         isVerified: true,
+        accessLevel: EAccessLevel.USER,
       });
     });
 
@@ -290,6 +291,7 @@ describe('AuthService', () => {
         userId: dummyCred.id,
         email: dummyCred.email,
         isVerified: false,
+        accessLevel: EAccessLevel.USER,
       });
     });
   });
