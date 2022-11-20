@@ -9,27 +9,27 @@ export interface IOrgRequest {
   name: string;
   description: string;
   address: string;
-  email?: string;
+  email?: string | null;
   mobileNumber: string;
   countryCode: string;
   provinceId: string;
   districtId: string;
   size: number;
-  logo?: string;
+  logo?: string | null;
   createdAt: Date;
   createdBy: string;
   updatedAt: Date;
   status: string;
-  handledAt?: Date;
-  handledBy?: string;
-  rejectionReason?: string;
+  handledAt?: Date | null;
+  handledBy?: string | null;
+  rejectionReason?: string | null;
 }
 
 export interface IOrgRequestCreation {
   name: string;
   description: string;
   address: string;
-  email?: string;
+  email?: string | null;
   mobileNumber: string;
   countryCode: string;
   provinceId: string;
@@ -37,8 +37,8 @@ export interface IOrgRequestCreation {
   size: number;
 }
 
-export interface BaseOrgRequestRepo {
-  createOrgRequest(
+export abstract class BaseOrgRequestRepo {
+  abstract createOrgRequest(
     payload: IOrgRequestCreation,
     creatorId: string,
   ): Promise<IOrgRequest>;
