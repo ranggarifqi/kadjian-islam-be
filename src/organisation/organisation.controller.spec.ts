@@ -8,6 +8,9 @@ import { RegisterOrgDto } from './organisation.dto';
 import { MockOrgCreationService } from './orgCreation/mock.service';
 import { BaseOrgCreationService } from './orgCreation/orgCreation.interface';
 import { AuthModule } from 'src/auth/auth.module';
+import { JwtService } from '@nestjs/jwt';
+import { getMockJWTToken } from 'src/common/testUtil/getMockJWTToken';
+import { EAccessLevel } from 'src/common/repos/credential';
 
 describe('OrganisationController', () => {
   const BASE_ENDPOINT_URL = '/organisations';
@@ -18,15 +21,15 @@ describe('OrganisationController', () => {
 
   // let controller: OrganisationController;
   // let orgCreationService: BaseOrgCreationService;
+  let jwtService: JwtService;
 
   beforeEach(async () => {
-    const {
-      // module,
-      app,
-    } = await getTestingApp({
+    const { module, app } = await getTestingApp({
       imports: [AuthModule],
       controllers: [OrganisationController],
       providers: [
+        JwtService,
+
         {
           provide: BaseOrgCreationService,
           useClass: MockOrgCreationService,
@@ -43,6 +46,7 @@ describe('OrganisationController', () => {
     // orgCreationService = module.get<BaseOrgCreationService>(
     //   BaseOrgCreationService,
     // );
+    jwtService = module.get<JwtService>(JwtService);
   });
 
   describe('registerOrganisation()', () => {
@@ -65,13 +69,21 @@ describe('OrganisationController', () => {
           .post(BASE_ENDPOINT_URL + '/register')
           .send(seeds.payload);
 
-        const resultBody = result.body;
-
-        console.log('ranggazzz', resultBody);
-
         expect(result.statusCode).toBe(HttpStatus.UNAUTHORIZED);
       });
-      it.todo("should return 403 if user hasn't verified yet");
+
+      it("should return 403 if user hasn't verified yet", async () => {
+        const jwt = await getMockJWTToken(jwtService, {
+          isVerified: false,
+          accessLevel: EAccessLevel.USER,
+        });
+        const result: request.Response = await request(server.getHttpServer())
+          .post(BASE_ENDPOINT_URL + '/register')
+          .set('Authorization', `bearer ${jwt}`)
+          .send(seeds.payload);
+
+        expect(result.statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
     });
 
     describe('test for payload', () => {
