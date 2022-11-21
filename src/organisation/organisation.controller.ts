@@ -9,6 +9,7 @@ import {
 import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/strategies/jwt.guard';
 import { IUserCredential } from 'src/auth/strategies/jwt.strategy';
+import { VerifiedUserGuard } from 'src/auth/strategies/verifiedUser.guard';
 import { IOrgRequest } from 'src/common/repos/orgRequest';
 import { SuccessResponse } from 'src/common/response';
 import { RegisterOrgDto } from './organisation.dto';
@@ -20,6 +21,7 @@ export class OrganisationController {
 
   @Post('register')
   @UseGuards(JwtAuthGuard)
+  @UseGuards(VerifiedUserGuard)
   async registerOrganisation(
     @Body() body: RegisterOrgDto,
     @Req() request: Request,
