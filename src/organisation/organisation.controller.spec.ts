@@ -75,9 +75,9 @@ describe('OrganisationController', () => {
 
     describe('test for auth', () => {
       it("should return 401 if user hasn't logged in", async () => {
-        const result: request.Response = await request(server.getHttpServer())
-          .post(BASE_ENDPOINT_URL + '/register')
-          .send(seeds.payload);
+        const result: request.Response = await mySuperTest.post('/register', {
+          payload: seeds.payload,
+        });
 
         expect(result.statusCode).toBe(HttpStatus.UNAUTHORIZED);
       });
@@ -87,10 +87,10 @@ describe('OrganisationController', () => {
           isVerified: false,
           accessLevel: EAccessLevel.USER,
         });
-        const result: request.Response = await request(server.getHttpServer())
-          .post(BASE_ENDPOINT_URL + '/register')
-          .set('Authorization', `bearer ${jwt}`)
-          .send(seeds.payload);
+        const result: request.Response = await mySuperTest.post('/register', {
+          jwt,
+          payload: seeds.payload,
+        });
 
         expect(result.statusCode).toBe(HttpStatus.FORBIDDEN);
       });
