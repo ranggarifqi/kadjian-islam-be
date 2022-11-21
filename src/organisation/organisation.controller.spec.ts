@@ -12,7 +12,8 @@ import { JwtService } from '@nestjs/jwt';
 import { getMockJWTToken } from 'src/common/testUtil/getMockJWTToken';
 import { EAccessLevel } from 'src/common/repos/credential';
 import { MySupertest } from 'src/common/testUtil/supertest';
-import { ErrorResponse } from 'src/common/response';
+import { ErrorResponse, SuccessResponse } from 'src/common/response';
+import { IOrgRequest } from 'src/common/repos/orgRequest';
 
 describe('OrganisationController', () => {
   const BASE_ENDPOINT_URL = '/organisations';
@@ -67,7 +68,10 @@ describe('OrganisationController', () => {
       };
       seeds.payload = payload;
 
+      seeds.userId = 'someuserid';
+
       seeds.jwt = await getMockJWTToken(jwtService, {
+        userId: seeds.userId,
         isVerified: true,
         accessLevel: EAccessLevel.USER,
       });
@@ -113,6 +117,24 @@ describe('OrganisationController', () => {
           'mobileNumber must be a valid phone number',
         );
       });
+    });
+
+    it('should return 201 on successful call', async () => {
+      const result: request.Response = await mySuperTest.post('/register', {
+        jwt: seeds.jwt,
+        payload: seeds.payload,
+      });
+
+      expect(result.statusCode).toBe(HttpStatus.CREATED);
+
+      const resultBody = result.body as SuccessResponse<IOrgRequest>;
+
+      expect(resultBody.statusCode).toBe(HttpStatus.CREATED);
+      expect(resultBody.message).toBe(
+        'Organsation request submitted successfully',
+      );
+
+      expect(resultBody.data.createdBy).toBe(seeds.userId);
     });
   });
 });

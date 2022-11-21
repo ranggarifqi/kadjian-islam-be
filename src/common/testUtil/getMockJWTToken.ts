@@ -4,13 +4,20 @@ import { EAccessLevel } from '../repos/credential';
 export const getMockJWTToken = async (
   jwtService: JwtService,
   {
+    userId,
+    email,
     isVerified,
     accessLevel,
-  }: { isVerified: boolean; accessLevel: EAccessLevel },
+  }: {
+    userId?: string;
+    email?: string;
+    isVerified: boolean;
+    accessLevel: EAccessLevel;
+  },
 ) => {
   return jwtService.signAsync({
-    userId: 'someuserid',
-    email: 'fulan@ranggarifqi.com',
+    userId: userId ?? 'someuserid',
+    email: email ?? 'fulan@ranggarifqi.com',
     isVerified,
     accessLevel,
   });
