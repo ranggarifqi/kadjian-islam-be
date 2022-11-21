@@ -22,9 +22,9 @@ describe('OrganisationController', () => {
   let mySuperTest: MySupertest;
 
   const seeds: Dict<any> = {};
+  const spies: Dict<jest.SpyInstance> = {};
 
-  // let controller: OrganisationController;
-  // let orgCreationService: BaseOrgCreationService;
+  let orgCreationService: BaseOrgCreationService;
   let jwtService: JwtService;
 
   beforeEach(async () => {
@@ -45,14 +45,14 @@ describe('OrganisationController', () => {
 
     await server.init();
 
-    // controller = module.get<OrganisationController>(OrganisationController);
-
-    // orgCreationService = module.get<BaseOrgCreationService>(
-    //   BaseOrgCreationService,
-    // );
+    orgCreationService = module.get<BaseOrgCreationService>(
+      BaseOrgCreationService,
+    );
     jwtService = module.get<JwtService>(JwtService);
 
     mySuperTest = new MySupertest(server, BASE_ENDPOINT_URL);
+
+    spies.createOrgRequest = jest.spyOn(orgCreationService, 'createOrgRequest');
   });
 
   describe('registerOrganisation()', () => {
@@ -135,6 +135,19 @@ describe('OrganisationController', () => {
       );
 
       expect(resultBody.data.createdBy).toBe(seeds.userId);
+
+      expect(spies.createOrgRequest).toHaveBeenCalledWith(
+        {
+          name: 'Test Org',
+          description: 'Test Org Description',
+          address: 'Test Org Address',
+          size: 50,
+          mobileNumber: '+62123456789',
+          provinceId: '11',
+          districtId: '1111',
+        },
+        seeds.userId,
+      );
     });
   });
 });
