@@ -15,8 +15,6 @@ export class MySupertest {
       result.set('Authorization', `bearer ${jwt}`);
     }
 
-    console.log(payload);
-
     return result.send(payload);
   };
 }
