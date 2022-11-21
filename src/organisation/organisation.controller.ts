@@ -20,8 +20,7 @@ export class OrganisationController {
   constructor(private orgCreationService: BaseOrgCreationService) {}
 
   @Post('register')
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(VerifiedUserGuard)
+  @UseGuards(JwtAuthGuard, VerifiedUserGuard)
   async registerOrganisation(
     @Body() body: RegisterOrgDto,
     @Req() request: Request,

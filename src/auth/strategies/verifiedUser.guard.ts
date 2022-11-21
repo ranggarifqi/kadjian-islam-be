@@ -8,7 +8,11 @@ export class VerifiedUserGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const user = request.user as IUserCredential;
+    const user = request.user as IUserCredential | undefined;
+
+    if (!user) {
+      return false;
+    }
 
     return user.isVerified;
   }
