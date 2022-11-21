@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import {
   IOrgRequestCreation,
   IOrgRequest,
@@ -5,6 +6,7 @@ import {
 } from 'src/common/repos/orgRequest';
 import { BaseOrgCreationService } from './orgCreation.interface';
 
+@Injectable()
 export class OrgCreationService extends BaseOrgCreationService {
   constructor(private orgRequestRepo: BaseOrgRequestRepo) {
     super();
