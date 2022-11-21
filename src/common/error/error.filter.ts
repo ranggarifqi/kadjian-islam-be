@@ -23,6 +23,8 @@ export class DefaultErrorFilter implements ExceptionFilter {
   }
 
   getErrorResponse(exception: unknown): ErrorResponse {
+    console.log(exception);
+
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
 
