@@ -1,28 +1,26 @@
 import {
-  IsAlphanumeric,
   IsEmail,
-  IsMobilePhone,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
+  IsPhoneNumber,
 } from 'class-validator';
 
 export class RegisterOrgDto {
-  @IsAlphanumeric()
   @IsNotEmpty()
   name: string;
 
-  @IsAlphanumeric()
   @IsNotEmpty()
   description: string;
 
-  @IsAlphanumeric()
   @IsNotEmpty()
   address: string;
 
+  @IsOptional()
   @IsEmail()
   email?: string | null;
 
-  @IsMobilePhone()
+  @IsPhoneNumber()
   @IsNotEmpty()
   mobileNumber: string;
 
