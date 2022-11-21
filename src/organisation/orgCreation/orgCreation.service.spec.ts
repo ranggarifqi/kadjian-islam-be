@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { v4 as uuidv4 } from 'uuid';
 
-import {
-  BaseOrgRequestRepo,
-  IOrgRequestCreation,
-} from 'src/common/repos/orgRequest';
+import { BaseOrgRequestRepo } from 'src/common/repos/orgRequest';
 import { MockOrgRequestRepository } from 'src/common/repos/orgRequest';
 import { OrgCreationService } from './orgCreation.service';
 import { Dict } from 'src/common/types';
-import { HasherService, MockHasher } from 'src/common/hasher';
+import { BasePhoneService, LibPhoneNumberService } from 'src/common/phone';
+import { RegisterOrgDto } from '../organisation.dto';
 
 describe('org creation service', () => {
   let orgRequestRepo: BaseOrgRequestRepo;
@@ -28,8 +26,8 @@ describe('org creation service', () => {
         },
 
         {
-          provide: HasherService,
-          useClass: MockHasher,
+          provide: BasePhoneService,
+          useClass: LibPhoneNumberService,
         },
 
         OrgCreationService,
@@ -49,22 +47,35 @@ describe('org creation service', () => {
     beforeEach(() => {
       stubs.create = jest.spyOn(orgRequestRepo, 'create');
     });
+
     it('should call orgRequestRepo.create() once', async () => {
       const creatorId = uuidv4();
-      const payload: IOrgRequestCreation = {
+      const payload: RegisterOrgDto = {
         name: 'Test Org',
         description: 'Test Org Description',
         address: 'Test Org Address',
         email: 'test.org@ranggarifqi.com',
-        mobileNumber: '812333123',
-        countryCode: '+62',
+        mobileNumber: '+62812333123',
         size: 50,
         provinceId: '11',
         districtId: '1111',
       };
       await service.createOrgRequest(payload, creatorId);
 
-      expect(stubs.create).toBeCalledWith(payload, creatorId);
+      expect(stubs.create).toBeCalledWith(
+        {
+          name: 'Test Org',
+          description: 'Test Org Description',
+          address: 'Test Org Address',
+          email: 'test.org@ranggarifqi.com',
+          mobileNumber: '812333123',
+          countryCode: '+62',
+          size: 50,
+          provinceId: '11',
+          districtId: '1111',
+        },
+        creatorId,
+      );
     });
   });
 });

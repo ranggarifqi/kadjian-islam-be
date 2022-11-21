@@ -1,8 +1,9 @@
-import { IOrgRequest, IOrgRequestCreation } from 'src/common/repos/orgRequest';
+import { IOrgRequest } from 'src/common/repos/orgRequest';
+import { RegisterOrgDto } from '../organisation.dto';
 
 export abstract class BaseOrgCreationService {
   abstract createOrgRequest(
-    payload: IOrgRequestCreation,
+    payload: RegisterOrgDto,
     creatorId: string,
   ): Promise<IOrgRequest>;
 }
