@@ -5,5 +5,6 @@ import { UserRepository } from './user';
 
 @Module({
   imports: [CredentialRepository, UserRepository, OrgRequestRepository],
+  exports: [CredentialRepository, UserRepository, OrgRequestRepository],
 })
 export class Repository {}

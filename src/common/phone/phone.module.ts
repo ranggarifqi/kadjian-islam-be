@@ -4,5 +4,6 @@ import { BasePhoneService } from './phone.interface';
 
 @Module({
   providers: [{ provide: BasePhoneService, useClass: LibPhoneNumberService }],
+  exports: [BasePhoneService],
 })
 export class PhoneModule {}
