@@ -11,11 +11,14 @@ import { AuthModule } from 'src/auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
 import { getMockJWTToken } from 'src/common/testUtil/getMockJWTToken';
 import { EAccessLevel } from 'src/common/repos/credential';
+import { MySupertest } from 'src/common/testUtil/supertest';
+import { ErrorResponse } from 'src/common/response';
 
 describe('OrganisationController', () => {
   const BASE_ENDPOINT_URL = '/organisations';
 
   let server: INestApplication;
+  let mySuperTest: MySupertest;
 
   const seeds: Dict<any> = {};
 
@@ -47,10 +50,12 @@ describe('OrganisationController', () => {
     //   BaseOrgCreationService,
     // );
     jwtService = module.get<JwtService>(JwtService);
+
+    mySuperTest = new MySupertest(server, BASE_ENDPOINT_URL);
   });
 
   describe('registerOrganisation()', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       const payload: RegisterOrgDto = {
         name: 'Test Org',
         description: 'Test Org Description',
@@ -61,6 +66,11 @@ describe('OrganisationController', () => {
         districtId: '1111',
       };
       seeds.payload = payload;
+
+      seeds.jwt = await getMockJWTToken(jwtService, {
+        isVerified: true,
+        accessLevel: EAccessLevel.USER,
+      });
     });
 
     describe('test for auth', () => {
@@ -87,7 +97,22 @@ describe('OrganisationController', () => {
     });
 
     describe('test for payload', () => {
-      it.todo('should return 400 if phone number is not valid');
+      it('should return 400 if phone number is not valid', async () => {
+        seeds.payload.mobileNumber = 'asdsdadsa123';
+        const result: request.Response = await mySuperTest.post('/register', {
+          jwt: seeds.jwt,
+          payload: seeds.payload,
+        });
+
+        const resultBody = result.body as ErrorResponse;
+
+        expect(result.statusCode).toBe(HttpStatus.BAD_REQUEST);
+        expect(resultBody.error).toBe('Bad Request');
+        expect(resultBody.message).toHaveLength(1);
+        expect((resultBody.message as string[])[0]).toBe(
+          'mobileNumber must be a valid phone number',
+        );
+      });
     });
   });
 });
