@@ -16,6 +16,12 @@ enum Gender {
   AKHWAT
 }
 
+enum CreateOrganisationStatus {
+  APPROVED
+  REJECTED
+  PENDING
+}
+
 model AccessLevel {
   name       String       @id()
   Credential Credential[]
@@ -48,6 +54,9 @@ model User {
   District   District?  @relation(fields: [districtId], references: [id])
   Province   Province?  @relation(fields: [provinceId], references: [id])
 
+  CreateOrganisationRequesters CreateOrganisationRequest[] @relation("CreateOrgRequest_Creator")
+  CreateOrganisationHandlers   CreateOrganisationRequest[] @relation("CreateOrgRequest_Handler")
+
   @@index([provinceId])
   @@index([districtId])
   @@index([credentialId])
@@ -58,8 +67,10 @@ model District {
   provinceId String
   name       String
 
-  Province Province @relation(fields: [provinceId], references: [id])
-  User     User[]
+  Province                  Province                    @relation(fields: [provinceId], references: [id])
+  User                      User[]
+  CreateOrganisationRequest CreateOrganisationRequest[]
+  Organisation              Organisation[]
 
   @@index([provinceId])
 }
@@ -68,6 +79,81 @@ model Province {
   id   String @id
   name String
 
-  districts District[]
-  User      User[]
+  districts                 District[]
+  User                      User[]
+  CreateOrganisationRequest CreateOrganisationRequest[]
+  Organisation              Organisation[]
+}
+
+model CreateOrganisationRequest {
+  id              String                   @id @default(uuid()) @db.Uuid
+  name            String                   @db.VarChar(255)
+  description     String
+  address         String
+  email           String?                  @db.VarChar(255)
+  mobileNumber    String                   @db.VarChar(50)
+  countryCode     String                   @db.VarChar(10)
+  provinceId      String
+  districtId      String
+  size            Int
+  logo            String?                  @db.VarChar(255)
+  createdAt       DateTime                 @default(now()) @db.Timestamptz()
+  createdBy       String                   @db.Uuid
+  updatedAt       DateTime                 @updatedAt @db.Timestamptz()
+  status          CreateOrganisationStatus @default(PENDING)
+  handledAt       DateTime?                @db.Timestamptz()
+  handledBy       String?                  @db.Uuid
+  rejectionReason String?
+
+  Province Province @relation(fields: [provinceId], references: [id])
+  District District @relation(fields: [districtId], references: [id])
+  Creator  User     @relation(name: "CreateOrgRequest_Creator", fields: [createdBy], references: [id])
+  Handler  User?    @relation(name: "CreateOrgRequest_Handler", fields: [handledBy], references: [id])
+
+  @@index([provinceId])
+  @@index([districtId])
+  @@index([createdBy])
+  @@index([handledBy])
+}
+
+model Organisation {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(255)
+  description  String
+  address      String
+  email        String?  @db.VarChar(255)
+  mobileNumber String   @db.VarChar(50)
+  countryCode  String   @db.VarChar(10)
+  provinceId   String
+  districtId   String
+  size         Int
+  logo         String?  @db.VarChar(255)
+  createdAt    DateTime @default(now()) @db.Timestamptz()
+  createdBy    String   @db.Uuid
+  updatedAt    DateTime @updatedAt @db.Timestamptz()
+  updatedBy    String?  @db.Uuid
+  requestId    String?  @db.Uuid
+
+  Province Province @relation(fields: [provinceId], references: [id])
+  District District @relation(fields: [districtId], references: [id])
+
+  @@index([provinceId])
+  @@index([districtId])
+  @@index([createdBy])
+  @@index([updatedBy])
+}
+
+model OrgUserRole {
+  name    String    @id()
+  OrgUser OrgUser[]
+}
+
+model OrgUser {
+  id             String  @id @default(uuid()) @db.Uuid
+  userid         String  @db.Uuid
+  organisationId String  @db.Uuid
+  orgUserRole    String  @default("Admin")
+  isSelected     Boolean @default(false)
+
+  OrgUserRole OrgUserRole @relation(fields: [orgUserRole], references: [name])
 }
