@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { User, Credential } from '@prisma/client';
+import { User, Credential, CreateOrganisationRequest } from '@prisma/client';
 import { TestFactory } from 'src/common/testUtil/factories';
 import * as factories from 'src/common/testUtil/factories';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -17,6 +17,7 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
 
   let userFactory: TestFactory<User>;
   let credentialFactory: TestFactory<Credential>;
+  let orgRequestFactory: TestFactory<CreateOrganisationRequest>;
 
   const seeds: Dict<any> = {};
 
@@ -33,6 +34,7 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
 
     credentialFactory = new factories.CredentialFactory(prismaService);
     userFactory = new factories.UserFactory(prismaService);
+    orgRequestFactory = new factories.OrgRequestFactory(prismaService);
 
     seeds.credential = await credentialFactory.create({});
     seeds.user = await userFactory.create({
@@ -86,6 +88,33 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       expect(id).not.toBeNull();
       expect(createdAt).not.toBeNull();
       expect(updatedAt).not.toBeNull();
+    });
+  });
+
+  describe('findAll()', () => {
+    beforeEach(async () => {
+      seeds.orgRequest = await orgRequestFactory.create({
+        createdBy: seeds.credential.id,
+      });
+    });
+
+    it('should find all data', async () => {
+      const result = await repository.findAll();
+
+      expect(result).toHaveLength(1);
+
+      expect(result[0].Creator).not.toBeUndefined();
+      expect(result[0].Creator?.firstName).toBe(seeds.user.firstName);
+      expect(result[0].Creator?.lastName).toBe(seeds.user.lastName);
+      expect(result[0].Creator?.gender).toBeUndefined();
+
+      expect(result[0].Province).not.toBeUndefined();
+      expect(result[0].Province?.name).toBe('ACEH');
+      expect(result[0].Province?.id).toBeUndefined;
+
+      expect(result[0].District).not.toBeUndefined();
+      expect(result[0].District?.name).toBe('KAB. BIREUEN');
+      expect(result[0].District?.id).toBeUndefined;
     });
   });
 });

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   BaseOrgRequestRepo,
+  EOrgRequestStatus,
   IOrgRequest,
   IOrgRequestCreation,
 } from './createOrgRequestRepo.interface';
@@ -10,6 +11,30 @@ import {
 export class OrgRequestPrismaRepository extends BaseOrgRequestRepo {
   constructor(private prismaService: PrismaService) {
     super();
+  }
+
+  async findAll(): Promise<IOrgRequest[]> {
+    const result = await this.prismaService.createOrganisationRequest.findMany({
+      include: {
+        Creator: { select: { firstName: true, lastName: true } },
+        Province: { select: { name: true } },
+        District: { select: { name: true } },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return result;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  findAllByUserId(userId: string): Promise<IOrgRequest[]> {
+    throw new Error('Method not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  findAllByStatus(status: EOrgRequestStatus): Promise<IOrgRequest[]> {
+    throw new Error('Method not implemented.');
   }
 
   async create(

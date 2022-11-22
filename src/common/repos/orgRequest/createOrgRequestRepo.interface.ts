@@ -1,3 +1,7 @@
+import { IDistrict } from '../district/district.interface';
+import { IProvince } from '../province/province.interface';
+import { IUser } from '../user';
+
 export enum EOrgRequestStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
@@ -23,6 +27,10 @@ export interface IOrgRequest {
   handledAt?: Date | null;
   handledBy?: string | null;
   rejectionReason?: string | null;
+
+  Creator?: Partial<IUser>;
+  Province?: Partial<IProvince>;
+  District?: Partial<IDistrict>;
 }
 
 export interface IOrgRequestCreation {
@@ -42,4 +50,12 @@ export abstract class BaseOrgRequestRepo {
     payload: IOrgRequestCreation,
     creatorId: string,
   ): Promise<IOrgRequest>;
+
+  abstract findAll(): Promise<Array<IOrgRequest>>;
+
+  abstract findAllByUserId(userId: string): Promise<Array<IOrgRequest>>;
+
+  abstract findAllByStatus(
+    status: EOrgRequestStatus,
+  ): Promise<Array<IOrgRequest>>;
 }
