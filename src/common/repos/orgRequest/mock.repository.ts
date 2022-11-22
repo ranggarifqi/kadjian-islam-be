@@ -30,4 +30,13 @@ export class MockOrgRequestRepository extends BaseOrgRequestRepo {
     });
     return Promise.resolve(dummy);
   }
+
+  updateById(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    id: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    payload: Partial<IOrgRequestCreation>,
+  ): Promise<IOrgRequest> {
+    throw new Error('Method not implemented.');
+  }
 }

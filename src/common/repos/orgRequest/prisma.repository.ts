@@ -50,4 +50,16 @@ export class OrgRequestPrismaRepository extends BaseOrgRequestRepo {
       });
     return newOrgRequest;
   }
+
+  updateById(
+    id: string,
+    payload: Partial<IOrgRequestCreation>,
+  ): Promise<IOrgRequest> {
+    return this.prismaService.createOrganisationRequest.update({
+      where: {
+        id,
+      },
+      data: payload,
+    });
+  }
 }

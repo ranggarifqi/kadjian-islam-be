@@ -45,12 +45,9 @@ export interface IOrgRequestCreation {
   size: number;
 }
 
-export abstract class BaseOrgRequestRepo {
-  abstract create(
-    payload: IOrgRequestCreation,
-    creatorId: string,
-  ): Promise<IOrgRequest>;
+export type IOrgRequestUpdate = Partial<IOrgRequestCreation>;
 
+export abstract class BaseOrgRequestRepo {
   abstract findAll(): Promise<Array<IOrgRequest>>;
 
   abstract findAllByUserId(userId: string): Promise<Array<IOrgRequest>>;
@@ -58,4 +55,14 @@ export abstract class BaseOrgRequestRepo {
   abstract findAllByStatus(
     status: EOrgRequestStatus,
   ): Promise<Array<IOrgRequest>>;
+
+  abstract create(
+    payload: IOrgRequestCreation,
+    creatorId: string,
+  ): Promise<IOrgRequest>;
+
+  abstract updateById(
+    id: string,
+    payload: IOrgRequestUpdate,
+  ): Promise<IOrgRequest>;
 }
