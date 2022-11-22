@@ -11,6 +11,7 @@ import {
   EOrgRequestStatus,
   IOrgRequestCreation,
 } from './createOrgRequestRepo.interface';
+import { add } from 'date-fns';
 
 describe('OrgRequestPrismaRepository Integration Tests', () => {
   let repository: OrgRequestPrismaRepository;
@@ -118,6 +119,40 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       expect(result[0].District).not.toBeUndefined();
       expect(result[0].District?.name).toBe('KAB. BIREUEN');
       expect(result[0].District?.id).toBeUndefined;
+    });
+
+    it('should be sorted by created at DESC', async () => {
+      const orgRequest2 = await orgRequestFactory.create({
+        createdBy: seeds.credential.id,
+        createdAt: add(new Date(), { days: 1 }),
+      });
+
+      const result = await repository.findAll();
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe(orgRequest2.id);
+      expect(result[1].id).toBe(seeds.orgRequest.id);
+    });
+  });
+
+  describe('findById()', () => {
+    beforeEach(async () => {
+      seeds.orgRequest = await orgRequestFactory.create({
+        createdBy: seeds.credential.id,
+      });
+    });
+
+    it('should return data correctly', async () => {
+      const result = await repository.findById(seeds.orgRequest.id);
+
+      expect(result).not.toBeNull();
+      expect(result?.id).toBe(seeds.orgRequest.id);
+    });
+
+    it('should return null if data not found', async () => {
+      const result = await repository.findById(uuidv4());
+
+      expect(result).toBeNull();
     });
   });
 
