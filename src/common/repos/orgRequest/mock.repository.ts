@@ -22,7 +22,10 @@ export class MockOrgRequestRepository extends BaseOrgRequestRepo {
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   findById(id: string): Promise<IOrgRequest | null> {
-    throw new Error('Method not implemented.');
+    const dummyData = OrgRequestFactory.getDummyData({
+      id,
+    });
+    return Promise.resolve(dummyData);
   }
   create(
     payload: IOrgRequestCreation,
@@ -41,6 +44,11 @@ export class MockOrgRequestRepository extends BaseOrgRequestRepo {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     payload: Partial<IOrgRequestCreation>,
   ): Promise<IOrgRequest> {
-    throw new Error('Method not implemented.');
+    const dummyData = OrgRequestFactory.getDummyData({
+      id,
+      ...payload,
+    });
+
+    return Promise.resolve(dummyData);
   }
 }

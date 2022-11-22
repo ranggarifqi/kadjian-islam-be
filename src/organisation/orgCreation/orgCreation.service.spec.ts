@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { v4 as uuidv4 } from 'uuid';
 
-import { BaseOrgRequestRepo } from 'src/common/repos/orgRequest';
+import {
+  BaseOrgRequestRepo,
+  EOrgRequestStatus,
+} from 'src/common/repos/orgRequest';
 import { MockOrgRequestRepository } from 'src/common/repos/orgRequest';
 import { OrgCreationService } from './orgCreation.service';
 import { Dict } from 'src/common/types';
@@ -76,6 +79,47 @@ describe('org creation service', () => {
         },
         creatorId,
       );
+    });
+  });
+
+  describe('rejectOrgRequest()', () => {
+    beforeEach(async () => {
+      stubs.findById = jest.spyOn(orgRequestRepo, 'findById');
+      stubs.updatedById = jest.spyOn(orgRequestRepo, 'updateById');
+    });
+
+    it('should throw 404 if no data found', async () => {
+      stubs.findById.mockResolvedValue(null);
+
+      let err: Error | undefined;
+
+      try {
+        await service.rejectOrgRequest(
+          'someorgreqid',
+          'someuserid',
+          'Some reason',
+        );
+      } catch (error) {
+        err = error;
+      }
+
+      expect(err).toBeDefined();
+      expect(err?.message).toBe(
+        `Organisation Request with id someorgreqid not found`,
+      );
+    });
+
+    it('should return the updated org request value', async () => {
+      const result = await service.rejectOrgRequest(
+        'someorgreqid',
+        'someuserid',
+        'Some reason',
+      );
+
+      expect(result.status).toBe(EOrgRequestStatus.REJECTED);
+      expect(result.handledBy).toBe('someuserid');
+      expect(result.handledAt).toStrictEqual(new Date());
+      expect(result.rejectionReason).toBe('Some reason');
     });
   });
 });
