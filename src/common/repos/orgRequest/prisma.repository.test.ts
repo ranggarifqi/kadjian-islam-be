@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { User, Credential, CreateOrganisationRequest } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
 import { TestFactory } from 'src/common/testUtil/factories';
 import * as factories from 'src/common/testUtil/factories';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -152,6 +153,33 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       expect(after?.handledAt).toStrictEqual(new Date());
       expect(after?.handledBy).toBe(seeds.user.id);
       expect(after?.rejectionReason).toBe('iseng');
+    });
+
+    it('should throw error if ID not found', async () => {
+      const before = await prismaService.createOrganisationRequest.findMany();
+
+      expect(before).toHaveLength(1);
+      expect(before[0].status).toBe(EOrgRequestStatus.PENDING);
+      expect(before[0].handledAt).toBeNull();
+      expect(before[0].handledBy).toBeNull();
+      expect(before[0].rejectionReason).toBeNull();
+
+      let error: Error | undefined;
+      try {
+        await repository.updateById(uuidv4(), {
+          status: EOrgRequestStatus.REJECTED,
+          handledAt: new Date(),
+          handledBy: seeds.user.id,
+          rejectionReason: 'iseng',
+        });
+      } catch (err) {
+        error = err;
+      }
+
+      expect(error).toBeDefined();
+      expect(error?.message).toContain(
+        'Invalid `this.prismaService.createOrganisationRequest.update()` invocation in',
+      );
     });
   });
 });
