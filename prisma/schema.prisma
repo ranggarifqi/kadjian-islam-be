@@ -160,4 +160,8 @@ model OrgUser {
   OrgUserRole  OrgUserRole  @relation(fields: [orgUserRole], references: [name])
   User         User         @relation(fields: [userId], references: [id])
   Organisation Organisation @relation(fields: [organisationId], references: [id])
+
+  @@index([userId])
+  @@index([organisationId])
+  @@index([orgUserRole])
 }
