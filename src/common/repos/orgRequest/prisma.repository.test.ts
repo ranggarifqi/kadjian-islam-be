@@ -22,6 +22,8 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
   const seeds: Dict<any> = {};
 
   beforeEach(async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2022-11-22'));
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [PrismaService, OrgRequestPrismaRepository],
     }).compile();
@@ -115,6 +117,41 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       expect(result[0].District).not.toBeUndefined();
       expect(result[0].District?.name).toBe('KAB. BIREUEN');
       expect(result[0].District?.id).toBeUndefined;
+    });
+  });
+
+  describe('updateById()', () => {
+    beforeEach(async () => {
+      seeds.orgRequest = await orgRequestFactory.create({
+        createdBy: seeds.credential.id,
+      });
+    });
+
+    it('should update correctly by id', async () => {
+      const before = await prismaService.createOrganisationRequest.findMany();
+
+      expect(before).toHaveLength(1);
+      expect(before[0].status).toBe(EOrgRequestStatus.PENDING);
+      expect(before[0].handledAt).toBeNull();
+      expect(before[0].handledBy).toBeNull();
+      expect(before[0].rejectionReason).toBeNull();
+
+      const result = await repository.updateById(seeds.orgRequest.id, {
+        status: EOrgRequestStatus.REJECTED,
+        handledAt: new Date(),
+        handledBy: seeds.user.id,
+        rejectionReason: 'iseng',
+      });
+
+      const after = await prismaService.createOrganisationRequest.findFirst({
+        where: { id: result.id },
+      });
+
+      expect(after).not.toBeNull();
+      expect(after?.status).toBe(EOrgRequestStatus.REJECTED);
+      expect(after?.handledAt).toStrictEqual(new Date());
+      expect(after?.handledBy).toBe(seeds.user.id);
+      expect(after?.rejectionReason).toBe('iseng');
     });
   });
 });
