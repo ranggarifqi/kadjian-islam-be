@@ -161,7 +161,7 @@ model OrgUser {
   User         User         @relation(fields: [userId], references: [id])
   Organisation Organisation @relation(fields: [organisationId], references: [id])
 
-  @@index([userId])
+  @@unique([userId, organisationId])
   @@index([organisationId])
   @@index([orgUserRole])
 }
