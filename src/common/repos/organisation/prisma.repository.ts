@@ -22,6 +22,7 @@ export class PrismaOrganisationRepository extends BaseOrganisationRepository<Pri
 
     const args: Prisma.OrganisationCreateArgs = {
       data: {
+        updatedBy: payload.createdBy,
         ...payload,
         OrgUsers: {
           create: [
