@@ -38,6 +38,12 @@ export class OrgRequestPrismaRepository extends BaseOrgRequestRepo {
     throw new Error('Method not implemented.');
   }
 
+  findById(id: string): Promise<IOrgRequest | null> {
+    return this.prismaService.createOrganisationRequest.findFirst({
+      where: { id },
+    });
+  }
+
   async create(
     payload: IOrgRequestCreation,
     creatorId: string,

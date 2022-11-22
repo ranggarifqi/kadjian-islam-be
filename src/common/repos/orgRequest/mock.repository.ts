@@ -20,6 +20,10 @@ export class MockOrgRequestRepository extends BaseOrgRequestRepo {
   findAllByStatus(status: EOrgRequestStatus): Promise<IOrgRequest[]> {
     throw new Error('Method not implemented.');
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  findById(id: string): Promise<IOrgRequest | null> {
+    throw new Error('Method not implemented.');
+  }
   create(
     payload: IOrgRequestCreation,
     creatorId: string,

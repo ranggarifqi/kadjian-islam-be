@@ -71,6 +71,8 @@ export abstract class BaseOrgRequestRepo {
     status: EOrgRequestStatus,
   ): Promise<Array<IOrgRequest>>;
 
+  abstract findById(id: string): Promise<IOrgRequest | null>;
+
   abstract create(
     payload: IOrgRequestCreation,
     creatorId: string,
