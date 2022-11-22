@@ -45,7 +45,22 @@ export interface IOrgRequestCreation {
   size: number;
 }
 
-export type IOrgRequestUpdate = Partial<IOrgRequestCreation>;
+export interface IOrgRequestUpdate {
+  name?: string;
+  description?: string;
+  address?: string;
+  email?: string | null;
+  mobileNumber?: string;
+  countryCode?: string;
+  size?: number;
+  logo?: string;
+  provinceId?: string;
+  districtId?: string;
+  status?: EOrgRequestStatus;
+  handledAt?: Date;
+  handledBy?: string;
+  rejectionReason?: string;
+}
 
 export abstract class BaseOrgRequestRepo {
   abstract findAll(): Promise<Array<IOrgRequest>>;
