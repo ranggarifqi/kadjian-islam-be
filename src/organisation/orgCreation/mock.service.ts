@@ -29,4 +29,19 @@ export class MockOrgCreationService extends BaseOrgCreationService {
 
     return Promise.resolve(dummy);
   }
+
+  rejectOrgRequest(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    id: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    rejecterId: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    reason?: string | undefined,
+  ): Promise<IOrgRequest> {
+    throw new Error('Method not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  approveOrgRequest(id: string, approverId: string): Promise<IOrgRequest> {
+    throw new Error('Method not implemented.');
+  }
 }
