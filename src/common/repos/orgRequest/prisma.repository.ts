@@ -5,6 +5,7 @@ import {
   EOrgRequestStatus,
   IOrgRequest,
   IOrgRequestCreation,
+  IOrgRequestUpdate,
 } from './createOrgRequestRepo.interface';
 
 @Injectable()
@@ -51,10 +52,7 @@ export class OrgRequestPrismaRepository extends BaseOrgRequestRepo {
     return newOrgRequest;
   }
 
-  updateById(
-    id: string,
-    payload: Partial<IOrgRequestCreation>,
-  ): Promise<IOrgRequest> {
+  updateById(id: string, payload: IOrgRequestUpdate): Promise<IOrgRequest> {
     return this.prismaService.createOrganisationRequest.update({
       where: {
         id,
