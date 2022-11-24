@@ -10,9 +10,13 @@ import { getIntegrationTestingModule } from 'src/common/testUtil/getTestingApp';
 import { truncateTables } from 'src/common/testUtil/teardown';
 import { Dict } from 'src/common/types';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { BaseOrganisationRepository } from './organisation.interface';
+import {
+  BaseOrganisationRepository,
+  IOrganisation,
+} from './organisation.interface';
 import { PrismaOrganisationRepository } from './prisma.repository';
 import { EOrgUserRole } from '../orgUser/orgUser.interface';
+import { getFakeTimer } from 'src/common/testUtil/getFakeTimer';
 
 describe('PrismaOrganisationRepository Integration Test', () => {
   let prismaService: PrismaService;
@@ -26,7 +30,7 @@ describe('PrismaOrganisationRepository Integration Test', () => {
   const seeds: Dict<any> = {};
 
   beforeEach(async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2022-11-22'));
+    getFakeTimer(new Date('2022-11-22'));
 
     const module = await getIntegrationTestingModule({
       providers: [
@@ -88,6 +92,39 @@ describe('PrismaOrganisationRepository Integration Test', () => {
       expect(orgUsers).toHaveLength(1);
       expect(orgUsers[0].userId).toBe(seeds.user.id);
       expect(orgUsers[0].organisationId).toBe(result.id);
+      expect(orgUsers[0].isSelected).toBe(true);
+      expect(orgUsers[0].orgUserRole).toBe(EOrgUserRole.ADMIN);
+    });
+
+    it('should create organisation with user as admin using transaction', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { rejectionReason, status, handledAt, handledBy, ...orgs } =
+        seeds.orgRequest as CreateOrganisationRequest;
+
+      let result: IOrganisation | undefined;
+
+      await prismaService.$transaction(async (transaction) => {
+        result = await repository.createWithUser(orgs, { transaction });
+      });
+
+      expect(result).toBeDefined();
+      expect(result!.name).toBe(orgs.name);
+      expect(result!.OrgUsers).toBeDefined();
+      expect(result!.OrgUsers).toHaveLength(1);
+
+      const organisation = await prismaService.organisation.findFirst({
+        where: { id: result!.id },
+      });
+      expect(organisation).not.toBeNull();
+      expect(organisation?.name).toBe(result!.name);
+      expect(organisation?.createdBy).toBe(result!.createdBy);
+      expect(organisation?.updatedBy).toBe(result!.updatedBy);
+      expect(organisation?.requestId).toBe(result!.requestId);
+
+      const orgUsers = await prismaService.orgUser.findMany();
+      expect(orgUsers).toHaveLength(1);
+      expect(orgUsers[0].userId).toBe(seeds.user.id);
+      expect(orgUsers[0].organisationId).toBe(result!.id);
       expect(orgUsers[0].isSelected).toBe(true);
       expect(orgUsers[0].orgUserRole).toBe(EOrgUserRole.ADMIN);
     });
