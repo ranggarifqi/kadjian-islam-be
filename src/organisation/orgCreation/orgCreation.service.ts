@@ -72,8 +72,19 @@ export class OrgCreationService extends BaseOrgCreationService {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  approveOrgRequest(id: string, approverId: string): Promise<IOrgRequest> {
-    throw new Error('Method not implemented.');
+  async approveOrgRequest(
+    id: string,
+    approverId: string,
+  ): Promise<IOrgRequest> {
+    const orgRequest = await this.orgRequestRepo.findById(id);
+
+    if (!orgRequest) {
+      throw new HttpException(
+        `Organisation Request with id ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return this.orgRequestRepo.approveById(id, approverId);
   }
 }

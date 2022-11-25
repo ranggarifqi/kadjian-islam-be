@@ -55,6 +55,7 @@ export class MockOrgRequestRepository extends BaseOrgRequestRepo {
       id,
       handledBy: approverId,
       handledAt: new Date(),
+      status: EOrgRequestStatus.APPROVED,
     });
 
     return Promise.resolve(dummyData);

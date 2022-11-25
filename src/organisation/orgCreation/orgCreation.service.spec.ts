@@ -122,4 +122,43 @@ describe('org creation service', () => {
       expect(result.rejectionReason).toBe('Some reason');
     });
   });
+
+  describe('approveOrgRequest()', () => {
+    beforeEach(() => {
+      stubs.findById = jest.spyOn(orgRequestRepo, 'findById');
+      stubs.approveById = jest.spyOn(orgRequestRepo, 'approveById');
+    });
+
+    it('should return 404 if no org request found', async () => {
+      stubs.findById.mockResolvedValue(null);
+
+      let err: Error | undefined;
+      try {
+        await service.approveOrgRequest('someorgreqid', 'approverid');
+      } catch (error) {
+        err = error;
+      }
+
+      expect(err).toBeDefined();
+      expect(err?.message).toBe(
+        `Organisation Request with id someorgreqid not found`,
+      );
+    });
+
+    it('should return an object of IOrgRequest', async () => {
+      const result = await service.approveOrgRequest(
+        'someorgreqid',
+        'approverid',
+      );
+
+      expect(result.status).toBe(EOrgRequestStatus.APPROVED);
+      expect(result.handledBy).toBe('approverid');
+      expect(result.handledAt).toStrictEqual(new Date());
+
+      expect(stubs.approveById).toHaveBeenCalledWith(
+        'someorgreqid',
+        'approverid',
+      );
+    });
+  });
 });
