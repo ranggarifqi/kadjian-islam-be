@@ -150,4 +150,90 @@ describe('OrganisationController', () => {
       );
     });
   });
+
+  describe('approve()', () => {
+    beforeEach(async () => {
+      seeds.jwt = await getMockJWTToken(jwtService, {
+        userId: seeds.userId,
+        isVerified: true,
+        accessLevel: EAccessLevel.ADMIN,
+      });
+
+      seeds.url = `/approve/someid`;
+
+      spies.approveOrgRequest = jest.spyOn(
+        orgCreationService,
+        'approveOrgRequest',
+      );
+    });
+
+    describe('test for auth', () => {
+      it('should return 401 if not authenticated', async () => {
+        const result: request.Response = await mySuperTest.patch(seeds.url);
+
+        expect(result.statusCode).toBe(HttpStatus.UNAUTHORIZED);
+      });
+
+      it('should return 403 if not verified', async () => {
+        const jwt = await getMockJWTToken(jwtService, {
+          userId: seeds.userId,
+          isVerified: false,
+          accessLevel: EAccessLevel.ADMIN,
+        });
+
+        const result: request.Response = await mySuperTest.patch(seeds.url, {
+          jwt,
+        });
+
+        expect(result.statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+
+      it('should return 403 if not an admin or moderator', async () => {
+        const jwt = await getMockJWTToken(jwtService, {
+          userId: seeds.userId,
+          isVerified: true,
+          accessLevel: EAccessLevel.USER,
+        });
+
+        const result: request.Response = await mySuperTest.patch(seeds.url, {
+          jwt,
+        });
+
+        expect(result.statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+
+      it('should allow moderator', async () => {
+        const jwt = await getMockJWTToken(jwtService, {
+          userId: seeds.userId,
+          isVerified: true,
+          accessLevel: EAccessLevel.MODERATOR,
+        });
+
+        const result: request.Response = await mySuperTest.patch(seeds.url, {
+          jwt,
+        });
+
+        expect(result.statusCode).toBe(HttpStatus.OK);
+      });
+    });
+
+    it('should approve org request', async () => {
+      const result: request.Response = await mySuperTest.patch(seeds.url, {
+        jwt: seeds.jwt,
+      });
+
+      expect(result.statusCode).toBe(HttpStatus.OK);
+
+      const resultBody = result.body as SuccessResponse<IOrgRequest>;
+
+      expect(resultBody.message).toBe('Organisation approved successfully');
+      expect(resultBody.data.id).toBe('someid');
+      expect(resultBody.data.handledBy).toBe(seeds.userId);
+
+      expect(spies.approveOrgRequest).toHaveBeenCalledWith(
+        'someid',
+        seeds.userId,
+      );
+    });
+  });
 });
