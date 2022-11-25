@@ -1,6 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AccessLevels } from './auth/strategies/accessLevel.decorator';
+import { AccessLevelGuard } from './auth/strategies/accessLevel.guard';
 import { JwtAuthGuard } from './auth/strategies/jwt.guard';
 import { IUserCredential } from './auth/strategies/jwt.strategy';
 import { ReqUser } from './common/decorators/reqUser';
@@ -22,8 +23,8 @@ export class AppController {
   }
 
   @Get('/admin-ping')
-  @UseGuards(JwtAuthGuard)
   @AccessLevels(EAccessLevel.ADMIN)
+  @UseGuards(JwtAuthGuard, AccessLevelGuard)
   adminPing(@ReqUser() user: IUserCredential) {
     return 'Welcome ' + user.email;
   }
