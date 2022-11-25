@@ -19,3 +19,7 @@ export const getTestingApp = async (metadata: ModuleMetadata) => {
     app,
   };
 };
+
+export const getIntegrationTestingModule = async (metadata: ModuleMetadata) => {
+  return await Test.createTestingModule(metadata).compile();
+};

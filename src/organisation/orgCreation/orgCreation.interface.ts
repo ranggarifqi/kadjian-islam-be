@@ -6,4 +6,15 @@ export abstract class BaseOrgCreationService {
     payload: RegisterOrgDto,
     creatorId: string,
   ): Promise<IOrgRequest>;
+
+  abstract rejectOrgRequest(
+    id: string,
+    rejecterId: string,
+    reason?: string,
+  ): Promise<IOrgRequest>;
+
+  abstract approveOrgRequest(
+    id: string,
+    approverId: string,
+  ): Promise<IOrgRequest>;
 }

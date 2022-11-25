@@ -56,6 +56,7 @@ model User {
 
   CreateOrganisationRequesters CreateOrganisationRequest[] @relation("CreateOrgRequest_Creator")
   CreateOrganisationHandlers   CreateOrganisationRequest[] @relation("CreateOrgRequest_Handler")
+  OrgUsers                     OrgUser[]
 
   @@index([provinceId])
   @@index([districtId])
@@ -67,10 +68,10 @@ model District {
   provinceId String
   name       String
 
-  Province                  Province                    @relation(fields: [provinceId], references: [id])
-  User                      User[]
-  CreateOrganisationRequest CreateOrganisationRequest[]
-  Organisation              Organisation[]
+  Province                   Province                    @relation(fields: [provinceId], references: [id])
+  Users                      User[]
+  CreateOrganisationRequests CreateOrganisationRequest[]
+  Organisations              Organisation[]
 
   @@index([provinceId])
 }
@@ -79,10 +80,10 @@ model Province {
   id   String @id
   name String
 
-  districts                 District[]
-  User                      User[]
-  CreateOrganisationRequest CreateOrganisationRequest[]
-  Organisation              Organisation[]
+  Districts                  District[]
+  Users                      User[]
+  CreateOrganisationRequests CreateOrganisationRequest[]
+  Organisations              Organisation[]
 }
 
 model CreateOrganisationRequest {
@@ -134,8 +135,9 @@ model Organisation {
   updatedBy    String?  @db.Uuid
   requestId    String?  @db.Uuid
 
-  Province Province @relation(fields: [provinceId], references: [id])
-  District District @relation(fields: [districtId], references: [id])
+  Province Province  @relation(fields: [provinceId], references: [id])
+  District District  @relation(fields: [districtId], references: [id])
+  OrgUsers OrgUser[]
 
   @@index([provinceId])
   @@index([districtId])
@@ -144,16 +146,22 @@ model Organisation {
 }
 
 model OrgUserRole {
-  name    String    @id()
-  OrgUser OrgUser[]
+  name     String    @id()
+  OrgUsers OrgUser[]
 }
 
 model OrgUser {
   id             String  @id @default(uuid()) @db.Uuid
-  userid         String  @db.Uuid
+  userId         String  @db.Uuid
   organisationId String  @db.Uuid
   orgUserRole    String  @default("Admin")
   isSelected     Boolean @default(false)
 
-  OrgUserRole OrgUserRole @relation(fields: [orgUserRole], references: [name])
+  OrgUserRole  OrgUserRole  @relation(fields: [orgUserRole], references: [name])
+  User         User         @relation(fields: [userId], references: [id])
+  Organisation Organisation @relation(fields: [organisationId], references: [id])
+
+  @@unique([userId, organisationId])
+  @@index([organisationId])
+  @@index([orgUserRole])
 }
