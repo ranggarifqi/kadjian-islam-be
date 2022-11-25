@@ -41,7 +41,7 @@ export interface IOrganisationCreation {
   requestId?: string | null;
 }
 
-export abstract class BaseOrganisationRepository<TransactionType> {
+export abstract class BaseOrganisationRepository<TransactionType = any> {
   abstract createWithUser(
     payload: IOrganisationCreation,
     option?: { transaction?: TransactionType },

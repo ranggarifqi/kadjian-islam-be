@@ -85,4 +85,9 @@ export abstract class BaseOrgRequestRepo<TransactionType = any> {
       transaction?: TransactionType;
     },
   ): Promise<IOrgRequest>;
+
+  abstract updateByIdThenCreateOrg(
+    id: string,
+    payload: IOrgRequestUpdate,
+  ): Promise<IOrgRequest>;
 }

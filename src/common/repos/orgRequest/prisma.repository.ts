@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { BaseOrganisationRepository } from '../organisation';
 import {
   BaseOrgRequestRepo,
   EOrgRequestStatus,
@@ -11,7 +12,10 @@ import {
 
 @Injectable()
 export class OrgRequestPrismaRepository extends BaseOrgRequestRepo<Prisma.TransactionClient> {
-  constructor(private prismaService: PrismaService) {
+  constructor(
+    private prismaService: PrismaService,
+    private organisationRepo: BaseOrganisationRepository<Prisma.TransactionClient>,
+  ) {
     super();
   }
 
@@ -78,5 +82,34 @@ export class OrgRequestPrismaRepository extends BaseOrgRequestRepo<Prisma.Transa
     }
 
     return this.prismaService.createOrganisationRequest.update(args);
+  }
+
+  async updateByIdThenCreateOrg(
+    id: string,
+    payload: IOrgRequestUpdate,
+  ): Promise<IOrgRequest> {
+    await this.prismaService.$transaction(async (transaction) => {
+      const updatedOrgReq = await this.updateById(id, payload, { transaction });
+
+      await this.organisationRepo.createWithUser({
+        requestId: updatedOrgReq.id,
+        name: updatedOrgReq.name,
+        description: updatedOrgReq.description,
+        address: updatedOrgReq.address,
+        countryCode: updatedOrgReq.countryCode,
+        mobileNumber: updatedOrgReq.mobileNumber,
+        email: updatedOrgReq.email,
+        logo: updatedOrgReq.logo,
+        size: updatedOrgReq.size,
+        provinceId: updatedOrgReq.provinceId,
+        districtId: updatedOrgReq.districtId,
+        createdBy: updatedOrgReq.createdBy,
+        updatedBy: updatedOrgReq.createdBy,
+      });
+    });
+
+    const updated = await this.findById(id);
+
+    return updated!;
   }
 }

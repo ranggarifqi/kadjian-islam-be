@@ -5,6 +5,7 @@ import {
   EOrgRequestStatus,
   IOrgRequest,
   IOrgRequestCreation,
+  IOrgRequestUpdate,
 } from './createOrgRequestRepo.interface';
 
 @Injectable()
@@ -39,10 +40,20 @@ export class MockOrgRequestRepository extends BaseOrgRequestRepo {
   }
 
   updateById(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     payload: Partial<IOrgRequestCreation>,
+  ): Promise<IOrgRequest> {
+    const dummyData = OrgRequestFactory.getDummyData({
+      id,
+      ...payload,
+    });
+
+    return Promise.resolve(dummyData);
+  }
+
+  updateByIdThenCreateOrg(
+    id: string,
+    payload: IOrgRequestUpdate,
   ): Promise<IOrgRequest> {
     const dummyData = OrgRequestFactory.getDummyData({
       id,
