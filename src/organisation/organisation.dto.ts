@@ -33,3 +33,7 @@ export class RegisterOrgDto {
   @IsNumber()
   size: number;
 }
+
+export class RejectOrgDto {
+  reason?: string;
+}

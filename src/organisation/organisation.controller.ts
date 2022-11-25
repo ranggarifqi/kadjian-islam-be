@@ -17,7 +17,7 @@ import { VerifiedUserGuard } from 'src/auth/strategies/verifiedUser.guard';
 import { EAccessLevel } from 'src/common/repos/credential';
 import { IOrgRequest } from 'src/common/repos/orgRequest';
 import { SuccessResponse } from 'src/common/response';
-import { RegisterOrgDto } from './organisation.dto';
+import { RegisterOrgDto, RejectOrgDto } from './organisation.dto';
 import { BaseOrgCreationService } from './orgCreation/orgCreation.interface';
 
 @Controller('organisations')
@@ -41,6 +41,31 @@ export class OrganisationController {
       statusCode: HttpStatus.CREATED,
       message: 'Organsation request submitted successfully',
       data: submittedOrg,
+    };
+  }
+
+  @Patch('reject/:id')
+  @AccessLevels(EAccessLevel.ADMIN, EAccessLevel.MODERATOR)
+  @UseGuards(JwtAuthGuard, VerifiedUserGuard, AccessLevelGuard)
+  async reject(
+    @Param('id') id: string,
+    @Body() body: RejectOrgDto,
+    @Req() request: Request,
+  ): Promise<SuccessResponse<IOrgRequest>> {
+    const credential = request.user as IUserCredential;
+
+    const { reason } = body;
+
+    const updatedOrgReq = await this.orgCreationService.rejectOrgRequest(
+      id,
+      credential.userId,
+      reason,
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: `Organisation rejected successfully`,
+      data: updatedOrgReq,
     };
   }
 

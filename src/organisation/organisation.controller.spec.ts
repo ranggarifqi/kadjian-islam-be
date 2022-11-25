@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { getTestingApp } from 'src/common/testUtil/getTestingApp';
 import { Dict } from 'src/common/types';
 import { OrganisationController } from './organisation.controller';
-import { RegisterOrgDto } from './organisation.dto';
+import { RegisterOrgDto, RejectOrgDto } from './organisation.dto';
 import { MockOrgCreationService } from './orgCreation/mock.service';
 import { BaseOrgCreationService } from './orgCreation/orgCreation.interface';
 import { AuthModule } from 'src/auth/auth.module';
@@ -147,6 +147,122 @@ describe('OrganisationController', () => {
           districtId: '1111',
         },
         seeds.userId,
+      );
+    });
+  });
+
+  describe('reject()', () => {
+    beforeEach(async () => {
+      seeds.jwt = await getMockJWTToken(jwtService, {
+        userId: seeds.userId,
+        isVerified: true,
+        accessLevel: EAccessLevel.ADMIN,
+      });
+
+      seeds.url = `/reject/someid`;
+
+      spies.rejectOrgRequest = jest.spyOn(
+        orgCreationService,
+        'rejectOrgRequest',
+      );
+    });
+
+    describe('test for auth', () => {
+      it('should return 401 if not authenticated', async () => {
+        const result: request.Response = await mySuperTest.patch(seeds.url);
+
+        expect(result.statusCode).toBe(HttpStatus.UNAUTHORIZED);
+      });
+
+      it('should return 403 if not verified', async () => {
+        const jwt = await getMockJWTToken(jwtService, {
+          userId: seeds.userId,
+          isVerified: false,
+          accessLevel: EAccessLevel.ADMIN,
+        });
+
+        const result: request.Response = await mySuperTest.patch(seeds.url, {
+          jwt,
+        });
+
+        expect(result.statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+
+      it('should return 403 if not an admin or moderator', async () => {
+        const jwt = await getMockJWTToken(jwtService, {
+          userId: seeds.userId,
+          isVerified: true,
+          accessLevel: EAccessLevel.USER,
+        });
+
+        const result: request.Response = await mySuperTest.patch(seeds.url, {
+          jwt,
+        });
+
+        expect(result.statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+
+      it('should allow moderator', async () => {
+        const jwt = await getMockJWTToken(jwtService, {
+          userId: seeds.userId,
+          isVerified: true,
+          accessLevel: EAccessLevel.MODERATOR,
+        });
+
+        const result: request.Response = await mySuperTest.patch(seeds.url, {
+          jwt,
+        });
+
+        expect(result.statusCode).toBe(HttpStatus.OK);
+      });
+    });
+
+    it('should reject org request with reason', async () => {
+      const result: request.Response = await mySuperTest.patch<RejectOrgDto>(
+        seeds.url,
+        {
+          jwt: seeds.jwt,
+          payload: { reason: 'Test Reason' },
+        },
+      );
+
+      expect(result.statusCode).toBe(HttpStatus.OK);
+
+      const resultBody = result.body as SuccessResponse<IOrgRequest>;
+
+      expect(resultBody.message).toBe('Organisation rejected successfully');
+      expect(resultBody.data.id).toBe('someid');
+      expect(resultBody.data.handledBy).toBe(seeds.userId);
+      expect(resultBody.data.rejectionReason).toBe('Test Reason');
+
+      expect(spies.rejectOrgRequest).toHaveBeenCalledWith(
+        'someid',
+        seeds.userId,
+        'Test Reason',
+      );
+    });
+
+    it('should reject org request without reason', async () => {
+      const result: request.Response = await mySuperTest.patch<RejectOrgDto>(
+        seeds.url,
+        {
+          jwt: seeds.jwt,
+        },
+      );
+
+      expect(result.statusCode).toBe(HttpStatus.OK);
+
+      const resultBody = result.body as SuccessResponse<IOrgRequest>;
+
+      expect(resultBody.message).toBe('Organisation rejected successfully');
+      expect(resultBody.data.id).toBe('someid');
+      expect(resultBody.data.handledBy).toBe(seeds.userId);
+      expect(resultBody.data.rejectionReason).toBeUndefined();
+
+      expect(spies.rejectOrgRequest).toHaveBeenCalledWith(
+        'someid',
+        seeds.userId,
+        undefined,
       );
     });
   });
