@@ -40,8 +40,14 @@ export class MockOrgCreationService extends BaseOrgCreationService {
   ): Promise<IOrgRequest> {
     throw new Error('Method not implemented.');
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   approveOrgRequest(id: string, approverId: string): Promise<IOrgRequest> {
-    throw new Error('Method not implemented.');
+    const dummy = OrgRequestFactory.getDummyData({
+      id,
+      handledBy: approverId,
+      handledAt: new Date(),
+    });
+
+    return Promise.resolve(dummy);
   }
 }
