@@ -14,6 +14,10 @@ import {
 } from './createOrgRequestRepo.interface';
 import { add } from 'date-fns';
 import { getFakeTimer } from 'src/common/testUtil/getFakeTimer';
+import {
+  BaseOrganisationRepository,
+  PrismaOrganisationRepository,
+} from '../organisation';
 
 describe('OrgRequestPrismaRepository Integration Tests', () => {
   let repository: OrgRequestPrismaRepository;
@@ -29,7 +33,14 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
     getFakeTimer(new Date('2022-11-22'));
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PrismaService, OrgRequestPrismaRepository],
+      providers: [
+        PrismaService,
+        OrgRequestPrismaRepository,
+        {
+          provide: BaseOrganisationRepository,
+          useClass: PrismaOrganisationRepository,
+        },
+      ],
     }).compile();
 
     repository = module.get<OrgRequestPrismaRepository>(
@@ -254,6 +265,58 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       expect(error?.message).toContain(
         'Invalid `this.prismaService.createOrganisationRequest.update()` invocation in',
       );
+    });
+  });
+
+  describe('updateByIdThenCreateOrg()', () => {
+    beforeEach(async () => {
+      seeds.orgRequest = await orgRequestFactory.create({
+        createdBy: seeds.credential.id,
+      });
+    });
+
+    it('should update by id correctly', async () => {
+      const before = await prismaService.createOrganisationRequest.findMany();
+
+      expect(before).toHaveLength(1);
+      expect(before[0].status).toBe(EOrgRequestStatus.PENDING);
+      expect(before[0].handledAt).toBeNull();
+      expect(before[0].handledBy).toBeNull();
+      expect(before[0].rejectionReason).toBeNull();
+
+      const result = await repository.updateByIdThenCreateOrg(
+        seeds.orgRequest.id,
+        {
+          status: EOrgRequestStatus.REJECTED,
+          handledAt: new Date(),
+          handledBy: seeds.user.id,
+          rejectionReason: 'iseng',
+        },
+      );
+
+      const after = await prismaService.createOrganisationRequest.findFirst({
+        where: { id: result.id },
+      });
+
+      expect(after).not.toBeNull();
+      expect(after?.status).toBe(EOrgRequestStatus.REJECTED);
+      expect(after?.handledAt).toStrictEqual(new Date());
+      expect(after?.handledBy).toBe(seeds.user.id);
+      expect(after?.rejectionReason).toBe('iseng');
+    });
+
+    it('should create org with user correctly', async () => {
+      const before = await prismaService.organisation.findMany();
+      expect(before).toHaveLength(0);
+
+      await repository.updateByIdThenCreateOrg(seeds.orgRequest.id, {
+        status: EOrgRequestStatus.APPROVED,
+        handledAt: new Date(),
+        handledBy: seeds.user.id,
+      });
+
+      const after = await prismaService.organisation.findMany();
+      expect(after).toHaveLength(1);
     });
   });
 });
