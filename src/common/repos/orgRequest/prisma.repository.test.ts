@@ -19,6 +19,7 @@ import {
   PrismaOrganisationRepository,
 } from '../organisation';
 import { EAccessLevel } from '../credential';
+import { EOrgUserRole } from '../orgUser/orgUser.interface';
 
 describe('OrgRequestPrismaRepository Integration Tests', () => {
   let repository: OrgRequestPrismaRepository;
@@ -308,7 +309,7 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       expect(after?.rejectionReason).toBeNull();
     });
 
-    it('should create org with user correctly', async () => {
+    it('should create organisation correctly', async () => {
       const before = await prismaService.organisation.findMany();
       expect(before).toHaveLength(0);
 
@@ -319,6 +320,25 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       expect(after[0].requestId).toBe(seeds.orgRequest.id);
       expect(after[0].createdBy).toBe(seeds.user.id);
       expect(after[0].updatedBy).toBe(seeds.user.id);
+    });
+
+    it('should create org user correctly', async () => {
+      const before = await prismaService.orgUser.findMany();
+      expect(before).toHaveLength(0);
+
+      await repository.approveById(seeds.orgRequest.id, seeds.admin.id);
+
+      const after = await prismaService.orgUser.findMany({
+        include: {
+          Organisation: true,
+        },
+      });
+      expect(after).toHaveLength(1);
+      expect(after[0].isSelected).toBeTruthy();
+      expect(after[0].userId).toBe(seeds.user.id);
+      expect(after[0].Organisation).toBeDefined();
+      expect(after[0].Organisation.requestId).toBe(seeds.orgRequest.id);
+      expect(after[0].orgUserRole).toBe(EOrgUserRole.ADMIN);
     });
   });
 });
