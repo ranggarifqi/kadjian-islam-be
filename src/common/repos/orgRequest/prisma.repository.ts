@@ -88,27 +88,34 @@ export class OrgRequestPrismaRepository extends BaseOrgRequestRepo<Prisma.Transa
     id: string,
     payload: IOrgRequestUpdate,
   ): Promise<IOrgRequest> {
-    await this.prismaService.$transaction(async (transaction) => {
-      const updatedOrgReq = await this.updateById(id, payload, { transaction });
+    const updated = await this.prismaService.$transaction(
+      async (transaction) => {
+        const updatedOrgReq = await this.updateById(id, payload, {
+          transaction,
+        });
 
-      await this.organisationRepo.createWithUser({
-        requestId: updatedOrgReq.id,
-        name: updatedOrgReq.name,
-        description: updatedOrgReq.description,
-        address: updatedOrgReq.address,
-        countryCode: updatedOrgReq.countryCode,
-        mobileNumber: updatedOrgReq.mobileNumber,
-        email: updatedOrgReq.email,
-        logo: updatedOrgReq.logo,
-        size: updatedOrgReq.size,
-        provinceId: updatedOrgReq.provinceId,
-        districtId: updatedOrgReq.districtId,
-        createdBy: updatedOrgReq.createdBy,
-        updatedBy: updatedOrgReq.createdBy,
-      });
-    });
+        await this.organisationRepo.createWithUser(
+          {
+            requestId: updatedOrgReq.id,
+            name: updatedOrgReq.name,
+            description: updatedOrgReq.description,
+            address: updatedOrgReq.address,
+            countryCode: updatedOrgReq.countryCode,
+            mobileNumber: updatedOrgReq.mobileNumber,
+            email: updatedOrgReq.email,
+            logo: updatedOrgReq.logo,
+            size: updatedOrgReq.size,
+            provinceId: updatedOrgReq.provinceId,
+            districtId: updatedOrgReq.districtId,
+            createdBy: updatedOrgReq.createdBy,
+            updatedBy: updatedOrgReq.createdBy,
+          },
+          { transaction },
+        );
 
-    const updated = await this.findById(id);
+        return updatedOrgReq;
+      },
+    );
 
     return updated!;
   }
