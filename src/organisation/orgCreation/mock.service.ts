@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IOrgRequest } from 'src/common/repos/orgRequest';
+import { EOrgRequestStatus, IOrgRequest } from 'src/common/repos/orgRequest';
 import { OrgRequestFactory } from 'src/common/testUtil/factories';
 import { RegisterOrgDto } from '../organisation.dto';
 import { BaseOrgCreationService } from './orgCreation.interface';
@@ -31,14 +31,19 @@ export class MockOrgCreationService extends BaseOrgCreationService {
   }
 
   rejectOrgRequest(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     rejecterId: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     reason?: string | undefined,
   ): Promise<IOrgRequest> {
-    throw new Error('Method not implemented.');
+    const dummy = OrgRequestFactory.getDummyData({
+      id,
+      handledBy: rejecterId,
+      handledAt: new Date(),
+      status: EOrgRequestStatus.REJECTED,
+      rejectionReason: reason,
+    });
+
+    return Promise.resolve(dummy);
   }
 
   approveOrgRequest(id: string, approverId: string): Promise<IOrgRequest> {
@@ -46,6 +51,7 @@ export class MockOrgCreationService extends BaseOrgCreationService {
       id,
       handledBy: approverId,
       handledAt: new Date(),
+      status: EOrgRequestStatus.APPROVED,
     });
 
     return Promise.resolve(dummy);
