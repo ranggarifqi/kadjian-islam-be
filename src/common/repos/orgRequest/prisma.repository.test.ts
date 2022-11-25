@@ -269,7 +269,7 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
     });
   });
 
-  describe('updateByIdThenCreateOrg()', () => {
+  describe('approveById()', () => {
     beforeEach(async () => {
       seeds.adminCred = await credentialFactory.create({
         accessLevel: EAccessLevel.ADMIN,
@@ -279,7 +279,7 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
         credentialId: seeds.adminCred.id,
       });
       seeds.orgRequest = await orgRequestFactory.create({
-        createdBy: seeds.credential.id,
+        createdBy: seeds.user.id,
       });
     });
 
@@ -316,6 +316,9 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
 
       const after = await prismaService.organisation.findMany();
       expect(after).toHaveLength(1);
+      expect(after[0].requestId).toBe(seeds.orgRequest.id);
+      expect(after[0].createdBy).toBe(seeds.user.id);
+      expect(after[0].updatedBy).toBe(seeds.user.id);
     });
   });
 });
