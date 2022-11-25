@@ -86,8 +86,5 @@ export abstract class BaseOrgRequestRepo<TransactionType = any> {
     },
   ): Promise<IOrgRequest>;
 
-  abstract updateByIdThenCreateOrg(
-    id: string,
-    payload: IOrgRequestUpdate,
-  ): Promise<IOrgRequest>;
+  abstract approveById(id: string, approverId: string): Promise<IOrgRequest>;
 }

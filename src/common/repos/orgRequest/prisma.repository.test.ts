@@ -18,6 +18,7 @@ import {
   BaseOrganisationRepository,
   PrismaOrganisationRepository,
 } from '../organisation';
+import { EAccessLevel } from '../credential';
 
 describe('OrgRequestPrismaRepository Integration Tests', () => {
   let repository: OrgRequestPrismaRepository;
@@ -270,12 +271,19 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
 
   describe('updateByIdThenCreateOrg()', () => {
     beforeEach(async () => {
+      seeds.adminCred = await credentialFactory.create({
+        accessLevel: EAccessLevel.ADMIN,
+      });
+      seeds.admin = await userFactory.create({
+        id: seeds.adminCred.id,
+        credentialId: seeds.adminCred.id,
+      });
       seeds.orgRequest = await orgRequestFactory.create({
         createdBy: seeds.credential.id,
       });
     });
 
-    it('should update by id correctly', async () => {
+    it('should approve by id correctly', async () => {
       const before = await prismaService.createOrganisationRequest.findMany();
 
       expect(before).toHaveLength(1);
@@ -284,14 +292,9 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       expect(before[0].handledBy).toBeNull();
       expect(before[0].rejectionReason).toBeNull();
 
-      const result = await repository.updateByIdThenCreateOrg(
+      const result = await repository.approveById(
         seeds.orgRequest.id,
-        {
-          status: EOrgRequestStatus.REJECTED,
-          handledAt: new Date(),
-          handledBy: seeds.user.id,
-          rejectionReason: 'iseng',
-        },
+        seeds.admin.id,
       );
 
       const after = await prismaService.createOrganisationRequest.findFirst({
@@ -299,21 +302,17 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       });
 
       expect(after).not.toBeNull();
-      expect(after?.status).toBe(EOrgRequestStatus.REJECTED);
+      expect(after?.status).toBe(EOrgRequestStatus.APPROVED);
       expect(after?.handledAt).toStrictEqual(new Date());
-      expect(after?.handledBy).toBe(seeds.user.id);
-      expect(after?.rejectionReason).toBe('iseng');
+      expect(after?.handledBy).toBe(seeds.admin.id);
+      expect(after?.rejectionReason).toBeNull();
     });
 
     it('should create org with user correctly', async () => {
       const before = await prismaService.organisation.findMany();
       expect(before).toHaveLength(0);
 
-      await repository.updateByIdThenCreateOrg(seeds.orgRequest.id, {
-        status: EOrgRequestStatus.APPROVED,
-        handledAt: new Date(),
-        handledBy: seeds.user.id,
-      });
+      await repository.approveById(seeds.orgRequest.id, seeds.admin.id);
 
       const after = await prismaService.organisation.findMany();
       expect(after).toHaveLength(1);

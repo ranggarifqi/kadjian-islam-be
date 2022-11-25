@@ -5,7 +5,6 @@ import {
   EOrgRequestStatus,
   IOrgRequest,
   IOrgRequestCreation,
-  IOrgRequestUpdate,
 } from './createOrgRequestRepo.interface';
 
 @Injectable()
@@ -51,13 +50,11 @@ export class MockOrgRequestRepository extends BaseOrgRequestRepo {
     return Promise.resolve(dummyData);
   }
 
-  updateByIdThenCreateOrg(
-    id: string,
-    payload: IOrgRequestUpdate,
-  ): Promise<IOrgRequest> {
+  approveById(id: string, approverId: string): Promise<IOrgRequest> {
     const dummyData = OrgRequestFactory.getDummyData({
       id,
-      ...payload,
+      handledBy: approverId,
+      handledAt: new Date(),
     });
 
     return Promise.resolve(dummyData);

@@ -84,15 +84,20 @@ export class OrgRequestPrismaRepository extends BaseOrgRequestRepo<Prisma.Transa
     return this.prismaService.createOrganisationRequest.update(args);
   }
 
-  async updateByIdThenCreateOrg(
-    id: string,
-    payload: IOrgRequestUpdate,
-  ): Promise<IOrgRequest> {
+  async approveById(id: string, approverId: string): Promise<IOrgRequest> {
     const updated = await this.prismaService.$transaction(
       async (transaction) => {
-        const updatedOrgReq = await this.updateById(id, payload, {
-          transaction,
-        });
+        const updatedOrgReq = await this.updateById(
+          id,
+          {
+            status: EOrgRequestStatus.APPROVED,
+            handledBy: approverId,
+            handledAt: new Date(),
+          },
+          {
+            transaction,
+          },
+        );
 
         await this.organisationRepo.createWithUser(
           {
