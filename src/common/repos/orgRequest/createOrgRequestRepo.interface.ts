@@ -62,7 +62,7 @@ export interface IOrgRequestUpdate {
   rejectionReason?: string;
 }
 
-export abstract class BaseOrgRequestRepo {
+export abstract class BaseOrgRequestRepo<TransactionType = any> {
   abstract findAll(): Promise<Array<IOrgRequest>>;
 
   abstract findAllByUserId(userId: string): Promise<Array<IOrgRequest>>;
@@ -81,5 +81,8 @@ export abstract class BaseOrgRequestRepo {
   abstract updateById(
     id: string,
     payload: IOrgRequestUpdate,
+    options?: {
+      transaction?: TransactionType;
+    },
   ): Promise<IOrgRequest>;
 }

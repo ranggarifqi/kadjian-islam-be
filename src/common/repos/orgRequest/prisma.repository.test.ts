@@ -9,9 +9,11 @@ import { truncateTables } from 'src/common/testUtil/teardown';
 import { Dict } from 'src/common/types';
 import {
   EOrgRequestStatus,
+  IOrgRequest,
   IOrgRequestCreation,
 } from './createOrgRequestRepo.interface';
 import { add } from 'date-fns';
+import { getFakeTimer } from 'src/common/testUtil/getFakeTimer';
 
 describe('OrgRequestPrismaRepository Integration Tests', () => {
   let repository: OrgRequestPrismaRepository;
@@ -24,7 +26,7 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
   const seeds: Dict<any> = {};
 
   beforeEach(async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2022-11-22'));
+    getFakeTimer(new Date('2022-11-22'));
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [PrismaService, OrgRequestPrismaRepository],
@@ -181,6 +183,43 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
 
       const after = await prismaService.createOrganisationRequest.findFirst({
         where: { id: result.id },
+      });
+
+      expect(after).not.toBeNull();
+      expect(after?.status).toBe(EOrgRequestStatus.REJECTED);
+      expect(after?.handledAt).toStrictEqual(new Date());
+      expect(after?.handledBy).toBe(seeds.user.id);
+      expect(after?.rejectionReason).toBe('iseng');
+    });
+
+    it('should update correctly by id using transaction', async () => {
+      const before = await prismaService.createOrganisationRequest.findMany();
+
+      expect(before).toHaveLength(1);
+      expect(before[0].status).toBe(EOrgRequestStatus.PENDING);
+      expect(before[0].handledAt).toBeNull();
+      expect(before[0].handledBy).toBeNull();
+      expect(before[0].rejectionReason).toBeNull();
+
+      let result: IOrgRequest | undefined;
+
+      await prismaService.$transaction(async (transaction) => {
+        result = await repository.updateById(
+          seeds.orgRequest.id,
+          {
+            status: EOrgRequestStatus.REJECTED,
+            handledAt: new Date(),
+            handledBy: seeds.user.id,
+            rejectionReason: 'iseng',
+          },
+          { transaction },
+        );
+      });
+
+      expect(result).toBeDefined();
+
+      const after = await prismaService.createOrganisationRequest.findFirst({
+        where: { id: result!.id },
       });
 
       expect(after).not.toBeNull();

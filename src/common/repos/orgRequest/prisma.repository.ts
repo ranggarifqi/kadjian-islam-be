@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   BaseOrgRequestRepo,
@@ -9,7 +10,7 @@ import {
 } from './createOrgRequestRepo.interface';
 
 @Injectable()
-export class OrgRequestPrismaRepository extends BaseOrgRequestRepo {
+export class OrgRequestPrismaRepository extends BaseOrgRequestRepo<Prisma.TransactionClient> {
   constructor(private prismaService: PrismaService) {
     super();
   }
@@ -58,12 +59,24 @@ export class OrgRequestPrismaRepository extends BaseOrgRequestRepo {
     return newOrgRequest;
   }
 
-  updateById(id: string, payload: IOrgRequestUpdate): Promise<IOrgRequest> {
-    return this.prismaService.createOrganisationRequest.update({
+  updateById(
+    id: string,
+    payload: IOrgRequestUpdate,
+    options?: { transaction?: Prisma.TransactionClient },
+  ): Promise<IOrgRequest> {
+    const { transaction } = options ?? {};
+
+    const args: Prisma.CreateOrganisationRequestUpdateArgs = {
       where: {
         id,
       },
       data: payload,
-    });
+    };
+
+    if (transaction) {
+      return transaction.createOrganisationRequest.update(args);
+    }
+
+    return this.prismaService.createOrganisationRequest.update(args);
   }
 }
