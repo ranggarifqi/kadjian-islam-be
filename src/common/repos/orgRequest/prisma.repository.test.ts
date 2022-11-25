@@ -340,5 +340,19 @@ describe('OrgRequestPrismaRepository Integration Tests', () => {
       expect(after[0].Organisation.requestId).toBe(seeds.orgRequest.id);
       expect(after[0].orgUserRole).toBe(EOrgUserRole.ADMIN);
     });
+
+    it('should throw error if ID not found', async () => {
+      let error: Error | undefined;
+      try {
+        await repository.approveById(uuidv4(), seeds.admin.id);
+      } catch (err) {
+        error = err;
+      }
+
+      expect(error).toBeDefined();
+      expect(error?.message).toContain(
+        'Invalid `transaction.createOrganisationRequest.update()` invocation in',
+      );
+    });
   });
 });
