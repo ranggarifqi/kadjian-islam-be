@@ -1,5 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { EAccessLevel } from '../repos/credential';
+import { EOrgUserRole } from '../repos/orgUser/orgUser.interface';
 
 export const getMockJWTToken = async (
   jwtService: JwtService,
@@ -8,11 +9,15 @@ export const getMockJWTToken = async (
     email,
     isVerified,
     accessLevel,
+    organisationId,
+    orgUserRole,
   }: {
     userId?: string;
     email?: string;
     isVerified: boolean;
     accessLevel: EAccessLevel;
+    organisationId?: string;
+    orgUserRole?: EOrgUserRole.ADMIN;
   },
 ) => {
   return jwtService.signAsync({
@@ -20,5 +25,7 @@ export const getMockJWTToken = async (
     email: email ?? 'fulan@ranggarifqi.com',
     isVerified,
     accessLevel,
+    organisationId: organisationId ?? 'someorgid',
+    orgUserRole: orgUserRole ?? EOrgUserRole.ADMIN,
   });
 };
