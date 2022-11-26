@@ -9,6 +9,7 @@ export interface IUserCredential {
   email: string;
   isVerified: boolean;
   accessLevel: EAccessLevel;
+  organisationId?: string;
 }
 
 @Injectable()
@@ -27,6 +28,7 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
       email: payload.email,
       isVerified: payload.isVerified,
       accessLevel: payload.accessLevel,
+      organisationId: payload.organisationId,
     };
   }
 }
