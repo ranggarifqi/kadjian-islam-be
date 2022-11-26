@@ -41,6 +41,13 @@ export class PrismaOrgUserRepository extends IOrgUserRepository {
         },
       });
 
+      await transaction.orgUser.findFirstOrThrow({
+        where: {
+          userId,
+          organisationId,
+        },
+      });
+
       await transaction.orgUser.updateMany({
         data: { isSelected: true },
         where: {
