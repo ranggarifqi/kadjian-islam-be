@@ -5,15 +5,21 @@ import {
   HttpCode,
   HttpException,
   HttpStatus,
+  Patch,
   Post,
   Query,
   Redirect,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { IUser } from 'src/common/repos/user';
 import { SuccessResponse } from 'src/common/response';
 
-import { LoginDTO, RegisterUserDTO } from './auth.dto';
+import { ChangeOrgDTO, LoginDTO, RegisterUserDTO } from './auth.dto';
 import { BaseAuthService } from './auth.interface';
+import { JwtAuthGuard } from './strategies/jwt.guard';
+import { IUserCredential } from './strategies/jwt.strategy';
 
 @Controller('auth')
 export class AuthController {
@@ -72,6 +78,27 @@ export class AuthController {
       statusCode: HttpStatus.OK,
       message: 'Login successful',
       data: jwt,
+    };
+  }
+
+  @Patch('change-org')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async changeorg(
+    @Body() payload: ChangeOrgDTO,
+    @Req() request: Request,
+  ): Promise<SuccessResponse<string>> {
+    const credential = request.user as IUserCredential;
+
+    const newJwt = await this.authService.changeOrg(
+      credential.userId,
+      payload.organisationId,
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Change organisation successful',
+      data: newJwt,
     };
   }
 }

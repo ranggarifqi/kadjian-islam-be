@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsOptional, Length } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsUUID,
+  Length,
+} from 'class-validator';
 import { GenderStr } from 'src/common/repos/user';
 
 export class RegisterUserDTO {
@@ -31,4 +37,10 @@ export class LoginDTO {
 
   @IsNotEmpty()
   password: string;
+}
+
+export class ChangeOrgDTO {
+  @IsNotEmpty()
+  @IsUUID()
+  organisationId: string;
 }
