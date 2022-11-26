@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { config } from 'src/common/config';
 import { EAccessLevel } from 'src/common/repos/credential';
+import { EOrgUserRole } from 'src/common/repos/orgUser/orgUser.interface';
 
 export interface IUserCredential {
   userId: string;
@@ -10,6 +11,7 @@ export interface IUserCredential {
   isVerified: boolean;
   accessLevel: EAccessLevel;
   organisationId?: string;
+  orgUserRole?: EOrgUserRole;
 }
 
 @Injectable()
@@ -29,6 +31,7 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
       isVerified: payload.isVerified,
       accessLevel: payload.accessLevel,
       organisationId: payload.organisationId,
+      orgUserRole: payload.orgUserRole,
     };
   }
 }
