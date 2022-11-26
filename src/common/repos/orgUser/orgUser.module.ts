@@ -11,5 +11,6 @@ import { PrismaOrgUserRepository } from './prisma.repository';
       useClass: PrismaOrgUserRepository,
     },
   ],
+  exports: [IOrgUserRepository],
 })
 export class OrgUserRepository {}

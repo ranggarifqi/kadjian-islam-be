@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { config } from 'src/common/config';
 import { EmailModule } from 'src/common/email';
 import { HasherModule } from 'src/common/hasher';
-import { CredentialRepository } from 'src/common/repos/credential';
+import { Repository } from 'src/common/repos/repo.module';
 import { UUIDModule } from 'src/common/uuid';
 
 import { AuthController } from './auth.controller';
@@ -14,7 +14,7 @@ import { JWTStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
-    CredentialRepository,
+    Repository,
 
     HasherModule,
     UUIDModule,
