@@ -20,6 +20,8 @@ export class PrismaOrganisationRepository extends BaseOrganisationRepository<Pri
   ): Promise<IOrganisation> {
     const { transaction } = option ?? {};
 
+    // TODO: Add logic, if user already have some orgs, then isSelected should be false
+
     const args: Prisma.OrganisationCreateArgs = {
       data: {
         updatedBy: payload.createdBy,
