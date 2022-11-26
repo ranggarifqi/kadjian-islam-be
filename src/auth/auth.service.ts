@@ -7,6 +7,7 @@ import {
   BaseCredentialRepository,
   EAccessLevel,
 } from 'src/common/repos/credential';
+import { IOrgUserRepository } from 'src/common/repos/orgUser/orgUser.interface';
 import { IUser } from 'src/common/repos/user';
 import { BaseUUIDService } from 'src/common/uuid';
 
@@ -19,6 +20,7 @@ const LOGIN_FAILED = 'Invalid Email or Password';
 export class AuthService extends BaseAuthService {
   constructor(
     private credentialRepo: BaseCredentialRepository,
+    private orgUserRepo: IOrgUserRepository,
 
     private emailer: EmailService,
     private hasher: HasherService,
@@ -119,11 +121,27 @@ export class AuthService extends BaseAuthService {
       throw new HttpException(LOGIN_FAILED, HttpStatus.UNAUTHORIZED);
     }
 
+    let selectedOrgId: string | undefined;
+    let orgUserRole: string | undefined;
+
+    const orgUsers = await this.orgUserRepo.findByUserId(credential.id);
+    if (orgUsers.length > 0) {
+      const selectedOrgUser = orgUsers.find((v) => v.isSelected);
+
+      // eslint-disable-next-line prefer-const
+      selectedOrgId =
+        selectedOrgUser?.organisationId ?? orgUsers[0].organisationId;
+      // eslint-disable-next-line prefer-const
+      orgUserRole = selectedOrgUser?.orgUserRole ?? orgUsers[0].orgUserRole;
+    }
+
     const jwt = await this.jwt.signAsync({
       userId: credential.id,
       email: credential.email,
       isVerified: !!credential.verifiedAt,
       accessLevel: credential.accessLevel,
+      organisationId: selectedOrgId,
+      orgUserRole: orgUserRole,
     } as IUserCredential);
 
     return jwt;
