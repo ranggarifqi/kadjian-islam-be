@@ -27,6 +27,10 @@ export class MockAuthService extends BaseAuthService {
       updatedAt: new Date(),
     });
   }
+
+  changeOrg(userId: string, newSelectedOrgId: string): Promise<string> {
+    return Promise.resolve('thisisajwt' + userId + newSelectedOrgId);
+  }
 }
 
 export class MockJWTService {

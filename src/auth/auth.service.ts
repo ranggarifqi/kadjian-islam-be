@@ -146,4 +146,56 @@ export class AuthService extends BaseAuthService {
 
     return jwt;
   }
+
+  async changeOrg(userId: string, newSelectedOrgId: string): Promise<string> {
+    /** Get the credential */
+    const credential = await this.credentialRepo.findOne({ id: userId });
+    if (!credential) {
+      throw new HttpException(
+        'Invalid user. Please contact administrator to mitigate this issue',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const orgUser = await this.orgUserRepo.findByMainKey(
+      userId,
+      newSelectedOrgId,
+    );
+
+    if (!orgUser) {
+      throw new HttpException(
+        "You don't belong to that org",
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const updatedOrgUsers = await this.orgUserRepo.selectOrgByMainKey(
+      userId,
+      newSelectedOrgId,
+    );
+
+    const newSelectedOrg = updatedOrgUsers.find((v) => v.isSelected);
+
+    if (!newSelectedOrg) {
+      throw new HttpException(
+        'Bug: No new selected org was found',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    const selectedOrgId = newSelectedOrg.organisationId;
+    const orgUserRole = newSelectedOrg.orgUserRole;
+
+    /** Construct new JWT Token */
+    const jwt = await this.jwt.signAsync({
+      userId: credential.id,
+      email: credential.email,
+      isVerified: !!credential.verifiedAt,
+      accessLevel: credential.accessLevel,
+      organisationId: selectedOrgId,
+      orgUserRole: orgUserRole,
+    } as IUserCredential);
+
+    return jwt;
+  }
 }
