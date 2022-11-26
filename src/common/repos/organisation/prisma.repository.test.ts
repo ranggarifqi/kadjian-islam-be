@@ -1,6 +1,8 @@
 import {
   CreateOrganisationRequest,
   Credential,
+  Organisation,
+  OrgUser,
   Prisma,
   User,
 } from '@prisma/client';
@@ -26,6 +28,8 @@ describe('PrismaOrganisationRepository Integration Test', () => {
   let userFactory: TestFactory<User>;
   let credentialFactory: TestFactory<Credential>;
   let orgRequestFactory: TestFactory<CreateOrganisationRequest>;
+  let orgFactory: TestFactory<Organisation>;
+  let orgUserFactory: TestFactory<OrgUser>;
 
   const seeds: Dict<any> = {};
 
@@ -51,6 +55,8 @@ describe('PrismaOrganisationRepository Integration Test', () => {
     credentialFactory = new factories.CredentialFactory(prismaService);
     userFactory = new factories.UserFactory(prismaService);
     orgRequestFactory = new factories.OrgRequestFactory(prismaService);
+    orgFactory = new factories.OrganisationFactory(prismaService);
+    orgUserFactory = new factories.OrgUserFactory(prismaService);
 
     seeds.credential = await credentialFactory.create();
     seeds.user = await userFactory.create({
@@ -126,6 +132,36 @@ describe('PrismaOrganisationRepository Integration Test', () => {
       expect(orgUsers[0].userId).toBe(seeds.user.id);
       expect(orgUsers[0].organisationId).toBe(result!.id);
       expect(orgUsers[0].isSelected).toBe(true);
+      expect(orgUsers[0].orgUserRole).toBe(EOrgUserRole.ADMIN);
+    });
+
+    it('should set isSelected as false if that user already have another active org', async () => {
+      /** seed */
+      const org = await orgFactory.create({
+        createdBy: seeds.user.id,
+      });
+      await orgUserFactory.create({
+        organisationId: org.id,
+        isSelected: true,
+        userId: seeds.user.id,
+        orgUserRole: EOrgUserRole.ADMIN,
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { rejectionReason, status, handledAt, handledBy, ...orgs } =
+        seeds.orgRequest as CreateOrganisationRequest;
+
+      const result = await repository.createWithUser(orgs);
+
+      const orgUsers = await prismaService.orgUser.findMany({
+        where: {
+          organisationId: result.id,
+        },
+      });
+      expect(orgUsers).toHaveLength(1);
+      expect(orgUsers[0].userId).toBe(seeds.user.id);
+      expect(orgUsers[0].organisationId).toBe(result!.id);
+      expect(orgUsers[0].isSelected).toBe(false);
       expect(orgUsers[0].orgUserRole).toBe(EOrgUserRole.ADMIN);
     });
   });

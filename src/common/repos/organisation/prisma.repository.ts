@@ -20,7 +20,14 @@ export class PrismaOrganisationRepository extends BaseOrganisationRepository<Pri
   ): Promise<IOrganisation> {
     const { transaction } = option ?? {};
 
-    // TODO: Add logic, if user already have some orgs, then isSelected should be false
+    const orgUsers = await this.prismaService.orgUser.findFirst({
+      where: {
+        userId: payload.createdBy,
+        isSelected: true,
+      },
+    });
+
+    const isSelected = orgUsers === null;
 
     const args: Prisma.OrganisationCreateArgs = {
       data: {
@@ -30,7 +37,7 @@ export class PrismaOrganisationRepository extends BaseOrganisationRepository<Pri
           create: [
             {
               userId: payload.createdBy,
-              isSelected: true,
+              isSelected,
               orgUserRole: EOrgUserRole.ADMIN,
             },
           ],
