@@ -15,4 +15,16 @@ export class PrismaOrgUserRepository extends IOrgUserRepository {
       },
     });
   }
+
+  findByMainKey(
+    userId: string,
+    organisationId: string,
+  ): Promise<IOrgUser | null> {
+    return this.prismaService.orgUser.findFirst({
+      where: {
+        userId,
+        organisationId,
+      },
+    });
+  }
 }

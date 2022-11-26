@@ -13,4 +13,8 @@ export interface IOrgUser {
 
 export abstract class IOrgUserRepository {
   abstract findByUserId(userId: string): Promise<IOrgUser[]>;
+  abstract findByMainKey(
+    userId: string,
+    organisationId: string,
+  ): Promise<IOrgUser | null>;
 }
