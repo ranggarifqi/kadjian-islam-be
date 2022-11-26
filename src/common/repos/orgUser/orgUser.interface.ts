@@ -17,4 +17,8 @@ export abstract class IOrgUserRepository {
     userId: string,
     organisationId: string,
   ): Promise<IOrgUser | null>;
+  abstract selectOrgByMainKey(
+    userId: string,
+    organisationId: string,
+  ): Promise<IOrgUser[]>;
 }

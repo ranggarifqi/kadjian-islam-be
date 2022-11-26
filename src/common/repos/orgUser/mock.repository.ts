@@ -14,4 +14,12 @@ export class MockOrgUserRepository extends IOrgUserRepository {
     const dummy = OrgUserFactory.getDummyData({ userId, organisationId });
     return Promise.resolve(dummy);
   }
+
+  selectOrgByMainKey(
+    userId: string,
+    organisationId: string,
+  ): Promise<IOrgUser[]> {
+    const dummy = OrgUserFactory.getDummyData({ userId, organisationId });
+    return Promise.resolve([dummy]);
+  }
 }

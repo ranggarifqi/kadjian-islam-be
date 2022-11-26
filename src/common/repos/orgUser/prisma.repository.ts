@@ -27,4 +27,31 @@ export class PrismaOrgUserRepository extends IOrgUserRepository {
       },
     });
   }
+
+  async selectOrgByMainKey(
+    userId: string,
+    organisationId: string,
+  ): Promise<IOrgUser[]> {
+    await this.prismaService.$transaction(async (transaction) => {
+      /** Unselect all */
+      await transaction.orgUser.updateMany({
+        data: { isSelected: false },
+        where: {
+          userId,
+        },
+      });
+
+      await transaction.orgUser.updateMany({
+        data: { isSelected: true },
+        where: {
+          userId,
+          organisationId,
+        },
+      });
+    });
+
+    return this.prismaService.orgUser.findMany({
+      where: { userId },
+    });
+  }
 }
