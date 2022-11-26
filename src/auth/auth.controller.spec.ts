@@ -1,5 +1,6 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { v4 as uuidv4 } from 'uuid';
 
 import { ErrorResponse, SuccessResponse } from 'src/common/response';
 import { getTestingApp } from 'src/common/testUtil/getTestingApp';
@@ -8,26 +9,46 @@ import { Dict } from 'src/common/types';
 import { AuthController } from './auth.controller';
 import { BaseAuthService } from './auth.interface';
 import { MockAuthService } from './mock.service';
-import { LoginDTO, RegisterUserDTO } from './auth.dto';
+import { ChangeOrgDTO, LoginDTO, RegisterUserDTO } from './auth.dto';
 import { EGender } from 'src/common/repos/user';
+import { MySupertest } from 'src/common/testUtil/supertest';
+import { JWTStrategy } from './strategies/jwt.strategy';
+import { getMockJWTToken } from 'src/common/testUtil/getMockJWTToken';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { EAccessLevel } from 'src/common/repos/credential';
+import { EOrgUserRole } from 'src/common/repos/orgUser/orgUser.interface';
+import { getFakeTimer } from 'src/common/testUtil/getFakeTimer';
+import { config } from 'src/common/config';
+import { CredentialFactory } from 'src/common/testUtil/factories';
 
 describe('AuthController', () => {
   const BASE_ENDPOINT_URL = '/auth';
 
   let server: INestApplication;
+  let mySuperTest: MySupertest;
 
   let controller: AuthController;
   let service: BaseAuthService;
+
+  let jwtService: JwtService;
 
   const spies: Dict<jest.SpyInstance> = {};
   const seeds: Dict<any> = {};
 
   beforeEach(async () => {
-    jest.useFakeTimers().setSystemTime(new Date(2022, 10, 30));
+    getFakeTimer(new Date(2022, 10, 30));
 
     const { module, app } = await getTestingApp({
+      imports: [
+        JwtModule.register({
+          secret: config.jwtSecret,
+          signOptions: { expiresIn: '15m' },
+        }),
+      ],
       controllers: [AuthController],
       providers: [
+        JWTStrategy,
+        JwtService,
         {
           provide: BaseAuthService,
           useClass: MockAuthService,
@@ -41,6 +62,9 @@ describe('AuthController', () => {
 
     controller = module.get<AuthController>(AuthController);
     service = module.get<BaseAuthService>(BaseAuthService);
+    jwtService = module.get(JwtService);
+
+    mySuperTest = new MySupertest(server, BASE_ENDPOINT_URL);
 
     spies.registerUser = jest.spyOn(service, 'registerUser');
     spies.verifyUser = jest.spyOn(service, 'verifyUser');
@@ -356,6 +380,101 @@ describe('AuthController', () => {
       expect(spies.login).toHaveBeenCalledWith(
         seeds.payload.email,
         seeds.payload.password,
+      );
+    });
+  });
+
+  describe('changeOrg()', () => {
+    beforeEach(async () => {
+      spies.changeOrg = jest.spyOn(service, 'changeOrg');
+
+      const payload: ChangeOrgDTO = {
+        organisationId: uuidv4(),
+      };
+      seeds.payload = payload;
+
+      seeds.credential = CredentialFactory.getDummyData();
+
+      seeds.jwt = await getMockJWTToken(jwtService, {
+        userId: seeds.credential.id,
+        isVerified: true,
+        accessLevel: EAccessLevel.USER,
+        organisationId: uuidv4(),
+        orgUserRole: EOrgUserRole.ADMIN,
+      });
+    });
+
+    it('should return 401 if not authorized', async () => {
+      const result: request.Response = await mySuperTest.patch<ChangeOrgDTO>(
+        '/change-org',
+        {
+          payload: seeds.payload,
+        },
+      );
+
+      const resultBody = result.body as ErrorResponse;
+
+      expect(result.statusCode).toBe(HttpStatus.UNAUTHORIZED);
+      expect(resultBody.message).toBe('Unauthorized');
+    });
+
+    describe('payload test', () => {
+      it("should return 400 if organisationId doesn't exist", async () => {
+        const result: request.Response = await mySuperTest.patch<ChangeOrgDTO>(
+          '/change-org',
+          {
+            jwt: seeds.jwt,
+          },
+        );
+
+        const resultBody = result.body as ErrorResponse;
+
+        expect(result.statusCode).toBe(400);
+        expect(resultBody.error).toBe('Bad Request');
+        expect(resultBody.message).toHaveLength(2);
+        expect(resultBody.message as string[]).toStrictEqual([
+          'organisationId must be a UUID',
+          'organisationId should not be empty',
+        ]);
+      });
+
+      it('should return 400 if organisationId is not a UUID', async () => {
+        const result: request.Response = await mySuperTest.patch<ChangeOrgDTO>(
+          '/change-org',
+          {
+            jwt: seeds.jwt,
+            payload: { organisationId: 'asdsada' },
+          },
+        );
+
+        const resultBody = result.body as ErrorResponse;
+
+        expect(result.statusCode).toBe(400);
+        expect(resultBody.error).toBe('Bad Request');
+        expect(resultBody.message).toHaveLength(1);
+        expect(resultBody.message as string[]).toStrictEqual([
+          'organisationId must be a UUID',
+        ]);
+      });
+    });
+
+    it('should return 200', async () => {
+      const result: request.Response = await mySuperTest.patch<ChangeOrgDTO>(
+        '/change-org',
+        {
+          jwt: seeds.jwt,
+          payload: seeds.payload,
+        },
+      );
+
+      expect(result.statusCode).toBe(200);
+
+      const resultBody = result.body as SuccessResponse<string>;
+      expect(resultBody.data).toContain('thisisajwt');
+
+      expect(spies.changeOrg).toHaveBeenCalledWith(
+        seeds.credential.id,
+        seeds.payload.organisationId,
       );
     });
   });

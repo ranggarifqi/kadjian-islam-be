@@ -20,6 +20,15 @@ export class PrismaOrganisationRepository extends BaseOrganisationRepository<Pri
   ): Promise<IOrganisation> {
     const { transaction } = option ?? {};
 
+    const orgUsers = await this.prismaService.orgUser.findFirst({
+      where: {
+        userId: payload.createdBy,
+        isSelected: true,
+      },
+    });
+
+    const isSelected = orgUsers === null;
+
     const args: Prisma.OrganisationCreateArgs = {
       data: {
         updatedBy: payload.createdBy,
@@ -28,7 +37,7 @@ export class PrismaOrganisationRepository extends BaseOrganisationRepository<Pri
           create: [
             {
               userId: payload.createdBy,
-              isSelected: true,
+              isSelected,
               orgUserRole: EOrgUserRole.ADMIN,
             },
           ],

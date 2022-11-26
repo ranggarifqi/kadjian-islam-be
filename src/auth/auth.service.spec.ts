@@ -1,6 +1,5 @@
 import { HttpException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { Dict } from 'src/common/types';
 import { HasherService, MockHasher } from 'src/common/hasher';
@@ -17,10 +16,22 @@ import { EGender } from 'src/common/repos/user';
 
 import { AuthService } from './auth.service';
 import { MockJWTService } from './mock.service';
-import { CredentialFactory } from 'src/common/testUtil/factories';
+import {
+  CredentialFactory,
+  OrganisationFactory,
+  OrgUserFactory,
+} from 'src/common/testUtil/factories';
+import {
+  EOrgUserRole,
+  IOrgUser,
+  IOrgUserRepository,
+} from 'src/common/repos/orgUser/orgUser.interface';
+import { MockOrgUserRepository } from 'src/common/repos/orgUser/mock.repository';
+import { getTestingApp } from 'src/common/testUtil/getTestingApp';
 
 describe('AuthService', () => {
   let credentialRepository: BaseCredentialRepository;
+  let orgUserRepository: IOrgUserRepository;
 
   let service: AuthService;
   let emailService: EmailService;
@@ -34,11 +45,15 @@ describe('AuthService', () => {
   beforeEach(async () => {
     jest.useFakeTimers().setSystemTime(new Date(2022, 10, 30));
 
-    const module: TestingModule = await Test.createTestingModule({
+    const { module } = await getTestingApp({
       providers: [
         {
           provide: BaseCredentialRepository,
           useClass: MockCredentialRepository,
+        },
+        {
+          provide: IOrgUserRepository,
+          useClass: MockOrgUserRepository,
         },
 
         AuthService,
@@ -59,9 +74,10 @@ describe('AuthService', () => {
           useClass: MockJWTService,
         },
       ],
-    }).compile();
+    });
 
     credentialRepository = module.get(BaseCredentialRepository);
+    orgUserRepository = module.get(IOrgUserRepository);
 
     service = module.get<AuthService>(AuthService);
     emailService = module.get<EmailService>(EmailService);
@@ -194,6 +210,8 @@ describe('AuthService', () => {
       seeds.password = 'fulan123';
 
       stubs.findCredential = jest.spyOn(credentialRepository, 'findOne');
+      stubs.findOrgUserByUserId = jest.spyOn(orgUserRepository, 'findByUserId');
+
       stubs.comparePassword = jest.spyOn(hasherService, 'compare');
       stubs.constructJWT = jest.spyOn(jwtService, 'signAsync');
     });
@@ -245,6 +263,7 @@ describe('AuthService', () => {
       });
       stubs.findCredential.mockResolvedValue(dummyCred);
       stubs.comparePassword.mockResolvedValue(true);
+      stubs.findOrgUserByUserId.mockResolvedValue([]);
 
       let result: string | null = null;
       let error: HttpException | null = null;
@@ -263,6 +282,8 @@ describe('AuthService', () => {
         email: dummyCred.email,
         isVerified: true,
         accessLevel: EAccessLevel.USER,
+        organisationId: undefined,
+        orgUserRole: undefined,
       });
     });
 
@@ -274,6 +295,7 @@ describe('AuthService', () => {
       });
       stubs.findCredential.mockResolvedValue(dummyCred);
       stubs.comparePassword.mockResolvedValue(true);
+      stubs.findOrgUserByUserId.mockResolvedValue([]);
 
       let result: string | null = null;
       let error: HttpException | null = null;
@@ -292,7 +314,206 @@ describe('AuthService', () => {
         email: dummyCred.email,
         isVerified: false,
         accessLevel: EAccessLevel.USER,
+        organisationId: undefined,
+        orgUserRole: undefined,
       });
+    });
+
+    it("should login with additional selected org's info", async () => {
+      const dummyCred = CredentialFactory.getDummyData({
+        email: seeds.email,
+        password: 'somehashedpassword',
+        verifiedAt: null,
+      });
+      stubs.findCredential.mockResolvedValue(dummyCred);
+      stubs.comparePassword.mockResolvedValue(true);
+      stubs.findOrgUserByUserId.mockResolvedValue([
+        OrgUserFactory.getDummyData({
+          organisationId: 'someorgid',
+          isSelected: true,
+          userId: dummyCred.id,
+          orgUserRole: EOrgUserRole.ADMIN,
+        }),
+        OrgUserFactory.getDummyData({
+          organisationId: 'someotherorgid',
+          isSelected: false,
+          userId: dummyCred.id,
+          orgUserRole: EOrgUserRole.MEMBER,
+        }),
+      ] as IOrgUser[]);
+
+      let result: string | null = null;
+      let error: HttpException | undefined;
+
+      try {
+        result = await service.login(seeds.email, seeds.password);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeUndefined();
+
+      expect(typeof result).toBe('string');
+
+      expect(stubs.constructJWT).toHaveBeenCalledWith({
+        userId: dummyCred.id,
+        email: dummyCred.email,
+        isVerified: false,
+        accessLevel: EAccessLevel.USER,
+        organisationId: 'someorgid',
+        orgUserRole: EOrgUserRole.ADMIN,
+      });
+    });
+
+    it('should choose the first returned org if none of them are selected', async () => {
+      const dummyCred = CredentialFactory.getDummyData({
+        email: seeds.email,
+        password: 'somehashedpassword',
+        verifiedAt: null,
+      });
+      stubs.findCredential.mockResolvedValue(dummyCred);
+      stubs.comparePassword.mockResolvedValue(true);
+      stubs.findOrgUserByUserId.mockResolvedValue([
+        OrgUserFactory.getDummyData({
+          organisationId: 'someotherorgid',
+          isSelected: false,
+          userId: dummyCred.id,
+          orgUserRole: EOrgUserRole.MEMBER,
+        }),
+        OrgUserFactory.getDummyData({
+          organisationId: 'someorgid',
+          isSelected: false,
+          userId: dummyCred.id,
+          orgUserRole: EOrgUserRole.ADMIN,
+        }),
+      ] as IOrgUser[]);
+
+      let result: string | null = null;
+      let error: HttpException | undefined;
+
+      try {
+        result = await service.login(seeds.email, seeds.password);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeUndefined();
+
+      expect(typeof result).toBe('string');
+
+      expect(stubs.constructJWT).toHaveBeenCalledWith({
+        userId: dummyCred.id,
+        email: dummyCred.email,
+        isVerified: false,
+        accessLevel: EAccessLevel.USER,
+        organisationId: 'someotherorgid',
+        orgUserRole: EOrgUserRole.MEMBER,
+      });
+    });
+  });
+
+  describe('changeOrg()', () => {
+    beforeEach(() => {
+      seeds.credential = CredentialFactory.getDummyData();
+      seeds.organisation = OrganisationFactory.getDummyData();
+      seeds.orgUser = OrgUserFactory.getDummyData({
+        userId: seeds.credential.id,
+        organisationId: seeds.organisation.id,
+      });
+
+      stubs.findOneCred = jest
+        .spyOn(credentialRepository, 'findOne')
+        .mockResolvedValue(seeds.credential);
+
+      stubs.findOrgUserByMainKey = jest
+        .spyOn(orgUserRepository, 'findByMainKey')
+        .mockResolvedValue(seeds.orgUser);
+
+      stubs.selectOrgByMainKey = jest
+        .spyOn(orgUserRepository, 'selectOrgByMainKey')
+        .mockResolvedValue([seeds.orgUser]);
+
+      stubs.constructJWT = jest
+        .spyOn(jwtService, 'signAsync')
+        .mockResolvedValue('newjwt');
+    });
+
+    it('should throw 404 if credential not found', async () => {
+      stubs.findOneCred.mockResolvedValue(null);
+
+      let error: Error | undefined;
+
+      try {
+        await service.changeOrg(seeds.credential.id, seeds.organisation.id);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeDefined();
+      expect(error!.message).toBe('Invalid user id');
+    });
+
+    it('should throw 403 if orgUser not found', async () => {
+      stubs.findOrgUserByMainKey.mockResolvedValue(null);
+
+      let error: Error | undefined;
+
+      try {
+        await service.changeOrg(seeds.credential.id, seeds.organisation.id);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeDefined();
+      expect(error!.message).toBe("You don't belong to that org");
+    });
+
+    it('should return 500 if no selected org found after update', async () => {
+      /** Means that there's a bug */
+
+      const buggedOrgUser = {
+        ...seeds.orgUser,
+        isSelected: false,
+      };
+      stubs.selectOrgByMainKey.mockResolvedValue([buggedOrgUser]);
+
+      let error: Error | undefined;
+
+      try {
+        await service.changeOrg(seeds.credential.id, seeds.organisation.id);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeDefined();
+      expect(error!.message).toBe('Bug: No new selected org was found');
+    });
+
+    it('should select the org successfully', async () => {
+      let error: Error | undefined;
+      let result: string | undefined;
+
+      try {
+        result = await service.changeOrg(
+          seeds.credential.id,
+          seeds.organisation.id,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeUndefined();
+
+      expect(stubs.constructJWT).toBeCalledWith({
+        userId: seeds.credential.id,
+        email: seeds.credential.email,
+        isVerified: !!seeds.credential.verifiedAt,
+        accessLevel: seeds.credential.accessLevel,
+        organisationId: seeds.organisation.id,
+        orgUserRole: seeds.orgUser.orgUserRole,
+      });
+
+      expect(result).toBe('newjwt');
     });
   });
 });
