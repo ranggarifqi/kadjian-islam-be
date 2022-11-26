@@ -151,10 +151,7 @@ export class AuthService extends BaseAuthService {
     /** Get the credential */
     const credential = await this.credentialRepo.findOne({ id: userId });
     if (!credential) {
-      throw new HttpException(
-        'Invalid user. Please contact administrator to mitigate this issue',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('Invalid user id', HttpStatus.NOT_FOUND);
     }
 
     const orgUser = await this.orgUserRepo.findByMainKey(
